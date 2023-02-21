@@ -29,4 +29,8 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+    from src.models import init_db, populate_db
+    app.cli.add_command(init_db)
+    app.cli.add_command(populate_db)
+
     return app

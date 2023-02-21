@@ -1,3 +1,5 @@
+import click
+import datetime
 from src.app import db
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -20,8 +22,8 @@ class Message(db.Model):
     message_id = db.Column(db.Integer, unique=True, primary_key=True)
     message_content = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
-    sender = db.Column(db.String(16), db.ForeignKey('user.username', ondelete="CASCADE"), unique=True, nullable=False)
-    thread_ID = db.Column(db.Integer, db.ForeignKey('thread.id', ondelete="CASCADE"), unique=True, nullable=False)
+    sender = db.Column(db.String(16), db.ForeignKey('user.username', ondelete="CASCADE"), nullable=False)
+    thread_ID = db.Column(db.Integer, db.ForeignKey('thread.id', ondelete="CASCADE"), nullable=False)
     parent_ID = db.Column(db.Integer, db.ForeignKey('message.message_id', ondelete="CASCADE"))
 
     parent = db.relationship("Message", remote_side=[message_id])
@@ -54,3 +56,60 @@ class Media(db.Model):
     message_id = db.Column(db.Integer, db.ForeignKey("message.message_id", ondelete="CASCADE"), nullable=False)
 
     message = db.relationship("Message", back_populates="media")
+
+
+@click.command("init-db")
+def init_db():
+    db.create_all()
+
+
+@click.command("populate-db")
+def populate_db():
+    user1 = User(username="User1", password="password")
+    user2 = User(username="User2", password="password")
+
+    thread = Thread()
+    message1 = Message(
+        message_content="Thread opening message",
+        timestamp=datetime.datetime.now(),
+    )
+    message1.user = user1
+    message1.thread = thread
+    media1 = Media(media_url="media1/url/")
+    media1.message = message1
+    reaction1 = Reaction(reaction_type=1)
+    reaction1.user = user2
+    reaction1.message = message1
+
+    message2 = Message(
+        message_content="Reply 1",
+        timestamp=datetime.datetime.now(),
+    )
+    message2.user = user2
+    message2.thread = thread
+    message2.parent = message1
+    reaction2 = Reaction(reaction_type=2)
+    reaction2.user = user1
+    reaction2.message = message2
+
+    message3 = Message(
+        message_content="Reply 2",
+        timestamp=datetime.datetime.now(),
+    )
+    message3.user = user1
+    message3.thread = thread
+    message3.parent = message2
+    media2 = Media(media_url="media2/url/")
+    media2.message = message3
+
+    db.session.add(user1)
+    db.session.add(user2)
+    db.session.add(thread)
+    db.session.add(message1)
+    db.session.add(media1)
+    db.session.add(reaction1)
+    db.session.add(message2)
+    db.session.add(reaction2)
+    db.session.add(message3)
+    db.session.add(media2)
+    db.session.commit()

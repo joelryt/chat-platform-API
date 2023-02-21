@@ -1,0 +1,5 @@
+instance
+.pytest-cache
+.idea
+.coverage
+**/__pycache__/
