@@ -23,7 +23,7 @@ class Message(db.Model):
     message_id = db.Column(db.Integer, unique=True, primary_key=True)
     message_content = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
-    sender = db.Column(db.String(16), db.ForeignKey('user.username', ondelete="CASCADE"), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
     thread_ID = db.Column(db.Integer, db.ForeignKey('thread.id', ondelete="CASCADE"), nullable=False)
     parent_ID = db.Column(db.Integer, db.ForeignKey('message.message_id', ondelete="CASCADE"))
 
@@ -35,7 +35,8 @@ class Message(db.Model):
 
 
 class User(db.Model):
-    username = db.Column(db.String(16), unique=True, primary_key=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    username = db.Column(db.String(16), unique=True, nullable=False)
     password = db.Column(db.String(32), nullable=False)
 
     messages = db.relationship("Message", back_populates="user")
@@ -45,7 +46,7 @@ class User(db.Model):
 class Reaction(db.Model):
     reaction_id = db.Column(db.Integer, unique=True, primary_key=True)
     reaction_type = db.Column(db.Integer, nullable=False)
-    username = db.Column(db.String(16), db.ForeignKey("user.username", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     message_id = db.Column(db.Integer, db.ForeignKey("message.message_id", ondelete="CASCADE"), nullable=False)
 
     user = db.relationship("User", back_populates="reactions")
