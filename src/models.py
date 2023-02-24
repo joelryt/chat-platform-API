@@ -3,6 +3,7 @@ import datetime
 from src.app import db
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
+from flask.cli import with_appcontext
 
 
 @event.listens_for(Engine, "connect")
@@ -59,6 +60,7 @@ class Media(db.Model):
 
 
 @click.command("init-db")
+@with_appcontext
 def init_db():
     db.create_all()
 

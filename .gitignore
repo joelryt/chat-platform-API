@@ -3,3 +3,4 @@ instance
 .idea
 .coverage
 **/__pycache__/
+chat_platform.egg-info
