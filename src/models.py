@@ -16,7 +16,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 class Thread(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True)
 
-    messages = db.relationship("Message", back_populates="thread")
+    messages = db.relationship("Message", back_populates="thread", cascade="all, delete, delete-orphan")
 
 
 class Message(db.Model):
@@ -29,7 +29,7 @@ class Message(db.Model):
 
     parent = db.relationship("Message", remote_side=[message_id])
     thread = db.relationship("Thread", back_populates="messages")
-    reactions = db.relationship("Reaction", back_populates="message")
+    reactions = db.relationship("Reaction", back_populates="message", cascade="all, delete")
     media = db.relationship("Media", back_populates="message")
     user = db.relationship("User", back_populates="messages")
 
@@ -40,7 +40,7 @@ class User(db.Model):
     password = db.Column(db.String(32), nullable=False)
 
     messages = db.relationship("Message", back_populates="user")
-    reactions = db.relationship("Reaction", back_populates="user")
+    reactions = db.relationship("Reaction", back_populates="user", cascade="all, delete")
 
 
 class Reaction(db.Model):
