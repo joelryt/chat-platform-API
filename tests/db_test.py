@@ -36,7 +36,9 @@ def app():
 
 
 def _get_thread():
-    return Thread()
+    return Thread(
+        title="thread title"
+    )
 
 
 def _get_message(user=None, thread=None, parent=None):
@@ -160,6 +162,18 @@ def test_media_relationships(app):
         db.session.add(media1)
         db.session.add(media2)
         db.session.commit()
+
+
+def test_thread_columns(app):
+    """
+    Tests column restrictions on Thread table.
+    """
+    with app.app_context():
+        thread = _get_thread()
+        thread.title = None
+        db.session.add(thread)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
 
 
 def test_message_columns(app):

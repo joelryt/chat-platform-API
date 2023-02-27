@@ -15,6 +15,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 class Thread(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
 
     messages = db.relationship("Message", back_populates="thread")
 
