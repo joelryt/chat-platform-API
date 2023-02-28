@@ -9,6 +9,7 @@ setup(
     install_requires=[
         "Flask",
         "Flask-SQLAlchemy",
-        "SQLAlchemy"
+        "SQLAlchemy",
+        "flask_restful"
     ]
 )
