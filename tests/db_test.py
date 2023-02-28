@@ -320,6 +320,7 @@ def test_media_columns(app):
         with pytest.raises(IntegrityError):
             db.session.commit()
 
+
 def test_message_delete_cascades(app):
     """
     Tests that deleting a message also deletes its reactions and media.
@@ -349,4 +350,40 @@ def test_message_delete_cascades(app):
         assert Message.query.count() == 0
         assert Reaction.query.count() == 0
         assert Media.query.count() == 0
+
+
+def user_delete_cascades(app):
+    """
+    Tests that deleting a user also deletes its messages and reactions.
+    """
+    with app.app_context():
+        user = _get_user()
+        user2 = _get_user("username2")
+        thread = _get_thread()
+        thread2 = _get_thread()
+        message = _get_message(user, thread)
+        message2 = _get_message(user2, thread2)
+        reaction = _get_reaction(user, message2)
+
+        db.session.add(user)
+        db.session.add(user2)
+        db.session.add(thread)
+        db.session.add(thread2)
+        db.session.add(message)
+        db.session.add(message2)
+        db.session.add(reaction)
+        db.session.commit()
+
+        assert User.query.count() == 2
+        assert Message.query.count() == 2
+        assert Reaction.query.count() == 1
+
+        db.session.delete(user)
+        db.session.commit()
+
+        assert User.query.count() == 1
+        assert Message.query.count() == 1
+        assert Message.query.first() == message2
+        assert Reaction.query.count() == 0
+
         
