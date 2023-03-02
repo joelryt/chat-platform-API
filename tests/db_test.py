@@ -323,7 +323,7 @@ def test_media_columns(app):
 
 def test_message_delete_cascades(app):
     """
-    Tests that deleting a message also deletes its reactions and media.
+    Tests that deleting a message also deletes its reactions, media and child messages.
     """
     with app.app_context():
         user = _get_user()
@@ -331,18 +331,19 @@ def test_message_delete_cascades(app):
         message = _get_message(user, thread)
         reaction = _get_reaction(user, message=message)
         media = _get_media(media_url="url1", message=message)
+        message2 = _get_message(user, thread, parent=message)
 
         db.session.add(user)
         db.session.add(thread)
-        db.session.commit()
         db.session.add(message)
         db.session.add(reaction)
         db.session.add(media)
+        db.session.add(message2)
         db.session.commit()
 
         assert Reaction.query.count() == 1
         assert Media.query.count() == 1
-        assert Message.query.count() == 1
+        assert Message.query.count() == 2
 
         db.session.delete(message)
         db.session.commit()
@@ -386,4 +387,30 @@ def user_delete_cascades(app):
         assert Message.query.first() == message2
         assert Reaction.query.count() == 0
 
-        
+
+def test_thread_delete_cascades(app):
+    """
+    Tests that deleting a thread also deletes its messages.
+    """
+    with app.app_context():
+        thread = _get_thread()
+        user = _get_user()
+        message1 = _get_message(user, thread)
+        message2 = _get_message(user, thread, message1)
+        message3 = _get_message(user, thread)
+
+        db.session.add(thread)
+        db.session.add(user)
+        db.session.add(message1)
+        db.session.add(message2)
+        db.session.add(message3)
+        db.session.commit()
+
+        assert Thread.query.count() == 1
+        assert Message.query.count() == 3
+
+        db.session.delete(thread)
+        db.session.commit()
+
+        assert Thread.query.count() == 0
+        assert Message.query.count() == 0
