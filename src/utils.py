@@ -1,6 +1,9 @@
 import datetime
+import secrets
+from flask import request
+from werkzeug.exceptions import Forbidden
 from src.app import db
-from src.models import Thread, Message, User, Reaction, Media
+from src.models import Thread, Message, User, Reaction, Media, ApiKey
 
 
 def sample_database():
@@ -18,9 +21,9 @@ def sample_database():
     --message4 - user3, reaction3, media3
 
     """
-    user1 = User(username="User1", password="password")
-    user2 = User(username="User2", password="password")
-    user3 = User(username="User3", password="password")
+    user1 = User(username="user1", password=User.password_hash("password"))
+    user2 = User(username="user2", password=User.password_hash("password"))
+    user3 = User(username="user3", password=User.password_hash("password"))
 
     thread = Thread(title="Thread title")
     message1 = Message(
