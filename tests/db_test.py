@@ -367,6 +367,18 @@ def test_media_columns(app):
             db.session.commit()
 
 
+def test_apikey_columns(app):
+    """
+    Tests column restrictions on ApiKey table.
+    """
+    with app.app_context():
+        key = _get_apikey()
+        key.key = None
+        db.session.add(key)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+
+
 def test_message_delete_cascades(app):
     """
     Tests that deleting a message also deletes its reactions, media and child messages.
@@ -401,7 +413,7 @@ def test_message_delete_cascades(app):
 
 def user_delete_cascades(app):
     """
-    Tests that deleting a user also deletes its messages and reactions.
+    Tests that deleting a user also deletes its messages, reactions and related API key.
     """
     with app.app_context():
         user = _get_user()
@@ -411,6 +423,7 @@ def user_delete_cascades(app):
         message = _get_message(user, thread)
         message2 = _get_message(user2, thread2)
         reaction = _get_reaction(user, message2)
+        key = _get_apikey(user)
 
         db.session.add(user)
         db.session.add(user2)
@@ -419,11 +432,13 @@ def user_delete_cascades(app):
         db.session.add(message)
         db.session.add(message2)
         db.session.add(reaction)
+        db.session.add(key)
         db.session.commit()
 
         assert User.query.count() == 2
         assert Message.query.count() == 2
         assert Reaction.query.count() == 1
+        assert ApiKey.query.count() == 1
 
         db.session.delete(user)
         db.session.commit()
@@ -432,6 +447,7 @@ def user_delete_cascades(app):
         assert Message.query.count() == 1
         assert Message.query.first() == message2
         assert Reaction.query.count() == 0
+        assert ApiKey.query.count() == 0
 
 
 def test_thread_delete_cascades(app):
@@ -460,3 +476,24 @@ def test_thread_delete_cascades(app):
 
         assert Thread.query.count() == 0
         assert Message.query.count() == 0
+
+
+def test_apikey_delete_doesnt_cascade(app):
+    """
+    Tests that deleting an API key doesn't delete connected user.
+    """
+    with app.app_context():
+        user = _get_user()
+        key = _get_apikey(user=user)
+        db.session.add(user)
+        db.session.add(key)
+        db.session.commit()
+
+        assert User.query.count() == 1
+        assert ApiKey.query.count() == 1
+
+        db.session.delete(key)
+        db.session.commit()
+
+        assert User.query.count() == 1
+        assert ApiKey.query.count() == 0
