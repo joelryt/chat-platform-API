@@ -1,10 +1,11 @@
 import os
 import pytest
 import tempfile
+import secrets
 
 from datetime import datetime
 from src.app import create_app, db
-from src.models import Thread, Message, User, Reaction, Media
+from src.models import Thread, Message, User, Reaction, Media, ApiKey
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 from sqlalchemy.exc import IntegrityError, StatementError
@@ -54,7 +55,7 @@ def _get_message(user=None, thread=None, parent=None):
 def _get_user(username="username"):
     return User(
         username=username,
-        password="password"
+        password=User.password_hash("password")
     )
 
 
@@ -73,6 +74,13 @@ def _get_media(media_url="url", message=None):
     )
 
 
+def _get_apikey(user=None):
+    return ApiKey(
+        key=ApiKey.key_hash(secrets.token_urlsafe()),
+        user=user
+    )
+
+
 def test_create_instances(app):
     """
     Tests creation of all database model instances.
@@ -83,6 +91,9 @@ def test_create_instances(app):
         user = _get_user()
         reaction = _get_reaction()
         media = _get_media()
+        key = _get_apikey()
+        assert isinstance(user.password, bytes)
+        assert isinstance(key.key, bytes)
 
         message.thread = thread
         message.user = user
@@ -95,11 +106,14 @@ def test_create_instances(app):
         db.session.add(user)
         db.session.add(reaction)
         db.session.add(media)
+        db.session.add(key)
         db.session.commit()
+
         assert Thread.query.count() == 1
         assert Message.query.count() == 1
         assert User.query.count() == 1
         assert Reaction.query.count() == 1
+        assert ApiKey.query.count() == 1
 
 
 def test_message_relationships(app):
@@ -112,11 +126,13 @@ def test_message_relationships(app):
         user = _get_user()
         message1 = _get_message(user=user, thread=thread)
         message2 = _get_message(user=user, thread=thread, parent=message1)
+
         assert message1.thread_ID == thread.id
         assert message2.thread_ID == thread.id
         assert message2.parent_ID == message1.message_id
         assert message1.sender_id == user.id
         assert message2.sender_id == user.id
+
         db.session.add(thread)
         db.session.add(user)
         db.session.add(message1)
@@ -134,10 +150,12 @@ def test_reaction_relationships(app):
         message = _get_message(user, thread)
         reaction1 = _get_reaction(user=user, message=message)
         reaction2 = _get_reaction(user=user, message=message)
+
         assert reaction1.message_id == message.message_id
         assert reaction2.message_id == message.message_id
         assert reaction1.user_id == user.id
         assert reaction2.user_id == user.id
+
         db.session.add(thread)
         db.session.add(user)
         db.session.add(reaction1)
@@ -155,13 +173,41 @@ def test_media_relationships(app):
         message = _get_message(user, thread)
         media1 = _get_media(media_url="url1", message=message)
         media2 = _get_media(media_url="url2", message=message)
+
         assert media1.message_id == message.message_id
         assert media2.message_id == message.message_id
+
         db.session.add(thread)
         db.session.add(user)
         db.session.add(media1)
         db.session.add(media2)
         db.session.commit()
+
+
+def test_apikey_relationships(app):
+    """
+    Tests the one-to-one relationship between an API key and a user.
+    """
+    with app.app_context():
+        user = _get_user()
+        key = _get_apikey(user=user)
+        assert key.user_id == user.id
+        db.session.add(user)
+        db.session.add(key)
+        db.session.commit()
+
+        db.session.rollback()
+
+        user1 = _get_user()
+        user2 = _get_user()
+        key = _get_apikey()
+        key.user = user1
+        key.user = user2
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.add(key)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
 
 
 def test_thread_columns(app):

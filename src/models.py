@@ -1,5 +1,5 @@
 import click
-import datetime
+import hashlib
 from src.app import db
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -42,6 +42,32 @@ class User(db.Model):
 
     messages = db.relationship("Message", back_populates="user", cascade="all, delete")
     reactions = db.relationship("Reaction", back_populates="user", cascade="all, delete")
+    key = db.relationship("ApiKey", back_populates="user", uselist=False)
+
+    def deserialize(self, doc):
+        self.username = doc["username"]
+        self.password = self.password_hash(doc["password"])
+
+    @staticmethod
+    def password_hash(password):
+        return hashlib.sha256(password.encode()).digest()
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["username", "password"]
+        }
+        props = schema["properties"] = {}
+        props["username"] = {
+            "description": "Unique username for the user",
+            "type": "string"
+        }
+        props["password"] = {
+            "description": "Password for the user",
+            "type": "string"
+        }
+        return schema
 
 
 class Reaction(db.Model):
@@ -59,6 +85,17 @@ class Media(db.Model):
     message_id = db.Column(db.Integer, db.ForeignKey("message.message_id", ondelete="CASCADE"), nullable=False)
 
     message = db.relationship("Message", back_populates="media")
+
+
+class ApiKey(db.Model):
+    key = db.Column(db.String(100), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=True)
+
+    user = db.relationship("User", back_populates="key")
+
+    @staticmethod
+    def key_hash(key):
+        return hashlib.sha256(key.encode()).digest()
 
 
 @click.command("init-db")
