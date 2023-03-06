@@ -57,7 +57,7 @@ class ThreadItem(Resource):
             )
         else:
             raise NotFound
-        return Response(json.dumps(body), 200, mimetype=JSON)
+        return Response(json.dumps(body), 200)
     def delete(self, id=None):
         if id is not None:
             thread = Thread.query.get(id)
@@ -85,13 +85,13 @@ class ThreadItem(Resource):
 
 class ThreadConverter(BaseConverter):
     def to_python(self, thread_id):
-        db_thread = Thread.query.filter_by(name=thread_id).first()
+        db_thread = Thread.query.filter_by(id=thread_id).first()
         if db_thread is None:
             raise NotFound
         return db_thread
 
     def to_url(self, db_thread):
-        return db_thread.id
+        return str(db_thread.id)
 
 class ThreadCollection(Resource):
 
@@ -110,7 +110,7 @@ class ThreadCollection(Resource):
 
         thread = Thread()
         thread.deserialize(request.json)
-        thread.thread_id = thread #HOOOOOOX
+        #thread.thread_id = thread
         db.session.add(thread)
         db.session.commit()
         thread_uri = api.url_for(ThreadItem, thread=thread)
