@@ -3,7 +3,23 @@ import hashlib
 from src.app import db
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
+from flask_sqlalchemy import SQLAlchemy
 from flask.cli import with_appcontext
+import datetime
+from flask import Flask, request, Response, abort, json
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.engine import Engine
+from sqlalchemy import event
+from flask_restful import Api, Resource
+from werkzeug.exceptions import NotFound, Conflict, BadRequest, UnsupportedMediaType
+from werkzeug.routing import BaseConverter
+from jsonschema import validate, ValidationError, draft7_format_checker
+
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
+api = Api(app)
 
 
 @event.listens_for(Engine, "connect")
