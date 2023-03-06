@@ -24,6 +24,7 @@ class ThreadItem(Resource):
         try:
             thread = Thread(
                 id=request.json["id"],
+                title=request.json["title"]
             )
             db.session.add(thread)
             db.session.commit()
