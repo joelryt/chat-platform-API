@@ -21,7 +21,6 @@ def require_login(func):
         key_hash = ApiKey.key_hash(token)
         db_key = ApiKey.query.filter_by(user=user).first()
         if db_key is not None and secrets.compare_digest(key_hash, db_key.key):
-            print('asdasdasd')
             return func(self, user, *args, **kwargs)
         raise Forbidden
     return wrapper
