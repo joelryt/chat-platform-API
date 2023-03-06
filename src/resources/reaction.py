@@ -29,7 +29,7 @@ class ReactionCollection(Resource):
             raise Conflict(f"Reaction with id {request.json['reaction_id']} already exists") from exc
         from src.api import api
         aaa = api.url_for(ReactionItem, reaction=reaction)
-        return Response(headers={"Location": aaa, "Content-Type": "application/json"}, status=201)
+        return Response(headers={"Location": aaa}, status=201)
     
 class ReactionItem(Resource):
     def get(self, reaction):
