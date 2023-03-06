@@ -239,7 +239,7 @@ class TestThreadCollection(object):
         Case 3: Non-json data posted -> 400/415
         Case 4: Invalid thread -> 400
         """
-        thread = _get_thread(id=1)
+        thread = _get_thread(id=0)
         # Case 1
         resp = client.post(self.RESOURCE_URL, json=thread)
         assert resp.status_code == 201
@@ -303,7 +303,7 @@ class TestThreadItem(object):
         assert resp.status_code == 404
 
 class TestMessageCollection(object):
-    RESOURCE_URL = "/api/threads/<thread:thread>/messages/"
+    RESOURCE_URL = "/api/threads/0/messages/"
 
     def test_post(self, client):
         """
@@ -337,8 +337,8 @@ class TestMessageCollection(object):
 
 class TestMessageItem(object):
 
-    RESOURCE_URL = "/api/threads/<thread:thread>/0/"
-    INVALID_URL = "/api/threads/<thread:thread>/non-existing-message/"
+    RESOURCE_URL = "/api/threads/0/0/"
+    INVALID_URL = "/api/threads/0/non-existing-message/"
 
     def test_get(self, client):
         """
