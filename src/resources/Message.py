@@ -15,6 +15,9 @@ from werkzeug.exceptions import NotFound, Conflict, BadRequest, UnsupportedMedia
 from werkzeug.routing import BaseConverter
 from jsonschema import validate, ValidationError, draft7_format_checker
 
+from src.models import Thread, Message
+from src.app import db
+
 class MessageItem(Resource):
     def post(self):
         if not request.json:
