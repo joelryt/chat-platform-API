@@ -1,4 +1,5 @@
 import os
+import re
 import pytest
 import tempfile
 from sqlalchemy.engine import Engine
@@ -42,6 +43,14 @@ def _get_user(username="username", password="password"):
     return {"username": username, "password": password}
 
 
+def _get_reaction(reaction_type=1, user_id=1, message_id=1):
+    return {"reaction_type": reaction_type, "user_id": user_id, "message_id": message_id}
+
+
+def _get_thread(title="Thread title"):
+    return {"title": title}
+
+
 def _login(client, username="user1", password="password"):
     """
     Helper function to log in as a user.
@@ -53,10 +62,6 @@ def _login(client, username="user1", password="password"):
         json={"username": username, "password": password}
     )
     return resp.headers["Api-key"]
-
-
-def _get_reaction(reaction_type=1, user_id=1, message_id=1):
-    return {"reaction_type": reaction_type, "user_id": user_id, "message_id": message_id}
 
 
 class TestUserCollection(object):
@@ -361,3 +366,86 @@ class TestRequireLogin(object):
         # Case 4
         resp = client.delete(self.RESOURCE_URL2, headers={"Api-key": None})
         assert resp.status_code == 403
+
+
+class TestThreadCollection(object):
+
+    RESOURCE_URL = "/api/threads/"
+
+    def test_post(self, client):
+        """
+        Tests posting to thread collection.
+        Case 1: Valid thread posted -> 201
+        Case 2: Non-json data posted -> 400/415
+        Case 3: Invalid thread posted -> 400
+        """
+        thread = _get_thread()
+        # Case 1
+        resp = client.post(self.RESOURCE_URL, json=thread)
+        assert resp.status_code == 201
+        assert re.match(f"{self.RESOURCE_URL}thread-\\d/", resp.headers["Location"])
+        # Check that user exists after posting it
+        resp = client.get(resp.headers["Location"])
+        assert resp.status_code == 200
+
+        # Case 2
+        resp = client.post(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 3
+        invalid_thread = _get_thread(title=None)
+        resp = client.post(self.RESOURCE_URL, json=invalid_thread)
+        assert resp.status_code == 400
+
+
+class TestThreadItem(object):
+
+    RESOURCE_URL = "/api/threads/thread-1/"
+    INVALID_URL = "/api/threads/non-existing-thread/"
+
+    def test_get(self, client):
+        """
+        Tests get method for thread item.
+        Case 1: Get existing thread -> 200
+        Case 2: Get non-existing thread -> 404
+        """
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert resp.headers["Title"] == "Thread title"
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+    def test_put(self, client):
+        """
+        Tests put method for thread item.
+        Case 1: Put valid thread -> 204
+        Case 2: Change existing thread's title -> 204
+        Case 3: Put non-json data -> 400/415
+        Case 4: Put invalid thread -> 400
+        Case 5: Put to non-existing resource -> 404
+        """
+        thread = _get_thread()
+        # Case 1
+        resp = client.put(self.RESOURCE_URL, json=thread)
+        assert resp.status_code == 204
+
+        # Case 2
+        thread["title"] = "new title"
+        resp = client.put(self.RESOURCE_URL, json=thread)
+        assert resp.status_code == 204
+
+        # Case 3
+        resp = client.put(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 4
+        invalid_thread = _get_thread(title=None)
+        resp = client.put(self.RESOURCE_URL, json=invalid_thread)
+        assert resp.status_code == 400
+
+        # Case 5
+        resp = client.put(self.INVALID_URL, json=thread)
+        assert resp.status_code == 404

@@ -32,11 +32,13 @@ def create_app(test_config=None):
     from src.models import init_db, populate_db
     from src.resources.user import UserConverter
     from src.resources.reaction import ReactionConverter
+    from src.resources.thread import ThreadConverter
     from . import api
     app.cli.add_command(init_db)
     app.cli.add_command(populate_db)
     app.url_map.converters["user"] = UserConverter
     app.url_map.converters["reaction"] = ReactionConverter
+    app.url_map.converters["thread"] = ThreadConverter
     app.register_blueprint(api.api_bp)
 
     return app

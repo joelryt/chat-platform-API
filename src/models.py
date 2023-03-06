@@ -19,6 +19,29 @@ class Thread(db.Model):
 
     messages = db.relationship("Message", back_populates="thread", cascade="all, delete, delete-orphan")
 
+    def serialize(self):
+        return {
+            "Thread": f"thread-{self.id}",
+            "Title": self.title
+        }
+
+    def deserialize(self, doc):
+        self.title = doc["title"]
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["title"]
+        }
+        props = schema["properties"] = {}
+        props["title"] = {
+            "description": "Thread title",
+            "type": "string",
+            "maxLength": 200
+        }
+        return schema
+
 
 class Message(db.Model):
     message_id = db.Column(db.Integer, unique=True, primary_key=True)
@@ -61,11 +84,13 @@ class User(db.Model):
         props = schema["properties"] = {}
         props["username"] = {
             "description": "Unique username for the user",
-            "type": "string"
+            "type": "string",
+            "maxLength": 16,
         }
         props["password"] = {
             "description": "Password for the user",
-            "type": "string"
+            "type": "string",
+            "maxLength": 32
         }
         return schema
 
