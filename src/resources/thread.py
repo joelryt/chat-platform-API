@@ -15,11 +15,6 @@ from werkzeug.exceptions import NotFound, Conflict, BadRequest, UnsupportedMedia
 from werkzeug.routing import BaseConverter
 from jsonschema import validate, ValidationError, draft7_format_checker
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
-api = Api(app)
 
 class ThreadItem(Resource):
     def post(self):
