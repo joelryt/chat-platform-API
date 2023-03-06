@@ -219,3 +219,158 @@ class TestUserLogout(object):
         # Case 3
         resp = client.post(self.INVALID_URL)
         assert resp.status_code == 404
+
+def _get_thread(id=None):
+    return {"id": id}
+
+def _get_message(message_id=None, message_content=None, timestamp=None, sender=None, thread_ID=None, parent_ID=None):
+    return {"message_id": message_id, "message_content": message_content, "timestamp": timestamp, "sender": sender,
+            "thread_ID": thread_ID, "parent_ID": parent_ID}
+
+class TestThreadCollection(object):
+
+    RESOURCE_URL = "/api/threads/"
+
+    def test_post(self, client):
+        """
+        Tests posting to user collection.
+        Case 1: Valid thread -> 201
+        Case 2: Duplicate threads -> 409
+        Case 3: Non-json data posted -> 400/415
+        Case 4: Invalid thread -> 400
+        """
+        thread = _get_thread(id=0)
+        # Case 1
+        resp = client.post(self.RESOURCE_URL, json=thread)
+        assert resp.status_code == 201
+        assert resp.headers["Location"].endswith(self.RESOURCE_URL + thread["id"] + "/")
+        # Check that thread exists after posting it
+        resp = client.get(resp.headers["Location"])
+        assert resp.status_code == 200
+
+        # Case 2
+        resp = client.post(self.RESOURCE_URL, json=thread)
+        assert resp.status_code == 409
+
+        # Case 3
+        resp = client.post(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 4
+        invalid_thread = _get_thread(id=None)
+        resp = client.post(self.RESOURCE_URL, json=invalid_thread)
+        assert resp.status_code == 400
+
+
+class TestThreadItem(object):
+
+    RESOURCE_URL = "/api/threads/0/"
+    INVALID_URL = "/api/threads/non-existing-thread/"
+
+    def test_get(self, client):
+        """
+        Tests get method for thread item.
+        Case 1: Get existing thread -> 200
+        Case 2: Get non-existing thread -> 404
+        """
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert resp.headers["id"] == self.RESOURCE_URL.split("/")[-2]
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+
+    def test_delete(self, client):
+        """
+        Tests delete method for thread item.
+        Case 1: Delete existing thread -> 204
+        Case 2: Delete previously deleted thread -> 404
+        Case 3: Delete non-existing resource -> 404
+        """
+        # Case 1
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+
+        # Case 2
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+
+        # Case 3
+        resp = client.delete(self.INVALID_URL)
+        assert resp.status_code == 404
+
+class TestMessageCollection(object):
+    RESOURCE_URL = "/api/threads/<thread:thread>/messages/"
+
+    def test_post(self, client):
+        """
+        Tests posting to user collection.
+        Case 1: Valid message -> 201
+        Case 2: Duplicate messages -> 409
+        Case 3: Non-json data posted -> 400/415
+        Case 4: Invalid message -> 400
+        """
+        message = _get_message(message_id=0, message_content="hauki", timestamp='2004-04-31', sender="AA", thread_ID=0, parent_ID=0):
+        # Case 1
+        resp = client.post(self.RESOURCE_URL, json=message)
+        assert resp.status_code == 201
+        assert resp.headers["Location"].endswith(self.RESOURCE_URL + message["message_id"] + "/")
+        # Check that thread exists after posting it
+        resp = client.get(resp.headers["Location"])
+        assert resp.status_code == 200
+
+        # Case 2
+        resp = client.post(self.RESOURCE_URL, json=message)
+        assert resp.status_code == 409
+
+        # Case 3
+        resp = client.post(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 4
+        invalid_thread = _get_message()
+        resp = client.post(self.RESOURCE_URL, json=invalid_thread)
+        assert resp.status_code == 400
+
+class TestMessageItem(object):
+
+    RESOURCE_URL = "/api/threads/<thread:thread>/0/"
+    INVALID_URL = "/api/threads/<thread:thread>/non-existing-message/"
+
+    def test_get(self, client):
+        """
+        Tests get method for message item.
+        Case 1: Get existing message -> 200
+        Case 2: Get non-existing message -> 404
+        """
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert resp.headers["message_id"] == self.RESOURCE_URL.split("/")[-2]
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+
+    def test_delete(self, client):
+        """
+        Tests delete method for message item.
+        Case 1: Delete existing message -> 204
+        Case 2: Delete previously deleted message -> 404
+        Case 3: Delete non-existing resource -> 404
+        """
+        # Case 1
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+
+        # Case 2
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+
+        # Case 3
+        resp = client.delete(self.INVALID_URL)
+        assert resp.status_code == 404

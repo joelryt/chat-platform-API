@@ -10,3 +10,9 @@ api.add_resource(UserItem, "/users/<user:user>/")
 api.add_resource(UserCollection, "/users/")
 api.add_resource(UserLogin, "/login/")
 api.add_resource(UserLogout, "/users/<user:user>/logout/")
+api.add_resource(ThreadItem, "/api/threads/<thread:thread>/")
+api.add_resource(MessageCollection, "/api/threads/<thread:thread>/messages/")
+api.add_resource(
+    MessageItem,
+    "/api/threads/<thread:thread>/messages/<message:message>/"
+)
