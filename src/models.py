@@ -79,6 +79,38 @@ class Reaction(db.Model):
     user = db.relationship("User", back_populates="reactions")
     message = db.relationship("Message", back_populates="reactions")
 
+    def deserialize(self, doc):
+        self.reaction_type = doc["reaction_type"]
+        self.user_id = doc["user_id"]
+        self.message_id = doc["message_id"]
+
+    def serialize(self):
+            data = {
+                "reaction_id": str(self.reaction_id),
+                "reaction_type": str(self.reaction_type),
+                "user_id": str(self.user_id),
+                "message_id": str(self.message_id)
+            }
+            print("Serializing Reaction object to JSON:", data)
+            return data
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["reaction_type", "user_id", "message_id"],
+        }
+        props = schema["properties"] = {}
+        props["reaction_type"] = {
+            "type": "integer",
+        }
+        props["user_id"] = {
+            "type": "integer",
+        }
+        props["message_id"] = {
+            "type": "integer",
+        }
+        return schema
 
 class Media(db.Model):
     media_url = db.Column(db.String(128), primary_key=True)
