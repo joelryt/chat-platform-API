@@ -55,6 +55,10 @@ def _login(client, username="user1", password="password"):
     return resp.headers["Api-key"]
 
 
+def _get_reaction(reaction_type=1, user_id=1, message_id=1):
+    return {"reaction_type": reaction_type, "user_id": user_id, "message_id": message_id}
+
+
 class TestUserCollection(object):
 
     RESOURCE_URL = "/api/users/"
@@ -221,6 +225,108 @@ class TestUserLogout(object):
 
         # Case 3
         resp = client.post(self.INVALID_URL)
+        assert resp.status_code == 404
+
+
+class TestReactionCollection(object):
+    RESOURCE_URL = "/api/reactions/"
+
+    def test_post(self, client):
+        # Case 1
+        # Check that reaction does not exist yet
+
+        reaction = _get_reaction(reaction_type=9, user_id=1, message_id=1)
+        resp = client.post(self.RESOURCE_URL, json=reaction)
+        assert resp.status_code == 201
+
+        # Check that reaction exists after posting it
+        resp = client.get(resp.headers["Location"])
+        assert resp.status_code == 200
+
+        # Case 2
+        reaction = _get_reaction(reaction_type=8, user_id=1, message_id=1)
+        resp = client.post(self.RESOURCE_URL, json=reaction)
+        assert resp.status_code == 409
+
+        # Case 3
+        resp = client.post(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 4
+        invalid_reaction = _get_reaction(reaction_type=None, user_id=None, message_id=None)
+        resp = client.post(self.RESOURCE_URL, json=invalid_reaction)
+        assert resp.status_code == 400
+
+
+class TestReactionItem(object):
+
+    RESOURCE_URL = "/api/reactions/2/"
+    INVALID_URL = "/api/reactions/non-existing-reaction/"
+
+    def test_get(self, client):
+        """
+        Tests get method for user item.
+        Case 1: Get existing user -> 200
+        Case 2: Get non-existing user -> 404
+        """
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert resp.headers["reaction"] == self.RESOURCE_URL.split("/")[-2]
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+    def test_put(self, client):
+        """
+        Tests put method for user item.
+        Case 1: Put valid user -> 204
+        Case 2: Change existing user's password -> 204
+        Case 3: Put non-json data -> 400/415
+        Case 4: Put invalid user -> 400
+        Case 5: Put to non-existing resource -> 404
+        """
+        reaction = _get_reaction(reaction_type=1, user_id=1, message_id=1)
+        # Case 1
+        resp = client.put(self.RESOURCE_URL, json=reaction)
+        assert resp.status_code == 204
+
+        # Case 2
+        reaction["reaction_type"] = 2
+        resp = client.put(self.RESOURCE_URL, json=reaction)
+        assert resp.status_code == 204
+
+        # Case 3
+        resp = client.put(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 4
+        invalid_reaction = reaction = _get_reaction(reaction_type=None, user_id=None, message_id=None)
+        resp = client.put(self.RESOURCE_URL, json=invalid_reaction)
+        assert resp.status_code == 400
+
+        # Case 5
+        resp = client.put(self.INVALID_URL, json=reaction)
+        assert resp.status_code == 404
+
+    def test_delete(self, client):
+        """
+        Tests delete method for user item.
+        Case 1: Delete existing user -> 204
+        Case 2: Delete previously deleted user -> 404
+        Case 3: Delete non-existing resource -> 404
+        """
+        # Case 1
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+
+        # Case 2
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+
+        # Case 3
+        resp = client.delete(self.INVALID_URL)
         assert resp.status_code == 404
 
 
