@@ -1,0 +1,2 @@
+def thread():
+    return None
