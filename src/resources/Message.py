@@ -129,7 +129,7 @@ class MessageConverter(BaseConverter):
         return db_message
 
     def to_url(self, db_message):
-        return db_message.id
+        return str(db_message.id)
 
 class MessageCollection(Resource):
 
