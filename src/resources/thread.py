@@ -25,8 +25,6 @@ class ThreadItem(Resource):
 
         try:
             thread = Thread(
-                id=request.json["id"],
-                title=request.json["title"]
             )
             db.session.add(thread)
             db.session.commit()
@@ -36,36 +34,32 @@ class ThreadItem(Resource):
             abort(409)
 
         return "", 201
-    def get(thread, id=None):
-        if id is not None:
-            thread_obj = Thread.query.join(id).filter(
-                Thread.id == id
-            ).first()
-            messages_obj = Message.query.filter_by(
-                thread_ID=thread_obj
-            ).order_by("timestamp")
-            body = {
-                "thread": thread_obj.id,
-                "messages": []
+    def get(thread):
+        thread_obj = Thread.query.join(id).filter(
+            Thread.id == id
+        ).first()
+        messages_obj = Message.query.filter_by(
+            thread_ID=thread_obj
+        ).order_by("timestamp")
+        body = {
+            "thread": thread_obj.id,
+            "messages": []
+        }
+        body["messages"].append(
+            {
+                "message_id": messages_obj.message_id,
+                "message_content": messages_obj.message_content,
+                "timestamp": messages_obj.timestamp.isoformat(),
+                "sender": messages_obj.sender,
+                "thread_ID": messages_obj.thread_ID,
+                "parent_ID": messages_obj.parent_ID,
             }
-            body["messages"].append(
-                {
-                    "message_id": messages_obj.message_id,
-                    "message_content": messages_obj.message_content,
-                    "timestamp": messages_obj.timestamp.isoformat(),
-                    "sender": messages_obj.sender,
-                    "thread_ID": messages_obj.thread_ID,
-                    "parent_ID": messages_obj.parent_ID,
-                }
-            )
-        else:
-            raise NotFound
+        )
         return Response(json.dumps(body), 200)
-    def delete(self, id=None):
-        if id is not None:
-            thread = Thread.query.get(id)
-            db.session.delete(thread)
-            db.session.commit()
+    def delete(self):
+        thread = Thread.query.get(id)
+        db.session.delete(thread)
+        db.session.commit()
 
     def serialize(self):
         return {
@@ -98,7 +92,7 @@ class ThreadConverter(BaseConverter):
 
 class ThreadCollection(Resource):
 
-    def post(self, thread):
+    def post(self):
         if not request.json:
             raise UnsupportedMediaType
 

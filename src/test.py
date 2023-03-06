@@ -239,7 +239,7 @@ class TestThreadCollection(object):
         Case 3: Non-json data posted -> 400/415
         Case 4: Invalid thread -> 400
         """
-        thread = _get_thread(id=0)
+        thread = _get_thread()
         # Case 1
         resp = client.post(self.RESOURCE_URL, json=thread)
         assert resp.status_code == 201
@@ -313,7 +313,7 @@ class TestMessageCollection(object):
         Case 3: Non-json data posted -> 400/415
         Case 4: Invalid message -> 400
         """
-        message = _get_message(message_id=0, message_content="hauki", timestamp='2004-04-31', sender="AA", thread_ID=0, parent_ID=0)
+        message = _get_message()
         # Case 1
         resp = client.post(self.RESOURCE_URL, json=message)
         assert resp.status_code == 201

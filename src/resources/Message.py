@@ -25,7 +25,6 @@ class MessageItem(Resource):
 
         try:
             message = Message(
-                temp=request.json["temp"],
             )
             db.session.add(message)
             db.session.commit()
@@ -35,34 +34,30 @@ class MessageItem(Resource):
             abort(409)
 
         return "", 201
-    def get(self, id=None):
-        if id is not None:
-            messages_obj = Message.query.filter_by(
-                message_id=id
-            ).order_by("timestamp")
-            body = {
-                "message": id,
-                "details": []
+    def get(self):
+        messages_obj = Message.query.filter_by(
+            message_id=id
+        ).order_by("timestamp")
+        body = {
+            "message": id,
+            "details": []
+        }
+        body["details"].append(
+            {
+                "message_id": messages_obj.message_id,
+                "message_content": messages_obj.message_content,
+                "timestamp": messages_obj.timestamp.isoformat(),
+                "sender": messages_obj.sender,
+                "thread_ID": messages_obj.thread_ID,
+                "parent_ID": messages_obj.parent_ID,
             }
-            body["details"].append(
-                {
-                    "message_id": messages_obj.message_id,
-                    "message_content": messages_obj.message_content,
-                    "timestamp": messages_obj.timestamp.isoformat(),
-                    "sender": messages_obj.sender,
-                    "thread_ID": messages_obj.thread_ID,
-                    "parent_ID": messages_obj.parent_ID,
-                }
-            )
-        else:
-            raise NotFound
+        )
         return Response(json.dumps(body), 200, mimetype=JSON)
-    def delete(self, message_id=None):
-        if message_id is not None:
-            message = Message.query.get(message_id)
-            db.session.delete(message)
-            db.session.commit()
-    def put(self, message):
+    def delete(self):
+        message = Message.query.get(message_id)
+        db.session.delete(message)
+        db.session.commit()
+    def put(self):
         if not request.json:
             raise UnsupportedMediaType
 
@@ -125,7 +120,7 @@ class MessageItem(Resource):
         return schema
 
 class MessageConverter(BaseConverter):
-    def to_python(self, message_id):
+    def to_python(self):
         db_message = Message.query.filter_by(message_id=message_id).first()
         if db_message is None:
             raise NotFound
@@ -136,7 +131,7 @@ class MessageConverter(BaseConverter):
 
 class MessageCollection(Resource):
 
-    def post(self, message):
+    def post(self):
         if not request.json:
             raise UnsupportedMediaType
 
