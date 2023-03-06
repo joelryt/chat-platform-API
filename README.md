@@ -27,6 +27,12 @@ To populate the database with some data after initializing it, run the populate-
 flask --app src\app populate-db
 ```
 
+# Deploying the API
+Deploy the API locally:
+```
+flask --app src\app run
+```
+
 # Running the tests
 Running the tests require pytest package. Install pytest package using pip:
 ```
@@ -35,4 +41,11 @@ pip install pytest
 To run all the tests, use command:
 ```
 pytest tests
+```
+To include coverage report, install the pytest-cov package and run the tests with --cov option:
+```
+pip install pytest-cov
+```
+```
+pytest tests --cov
 ```
