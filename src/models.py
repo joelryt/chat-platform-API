@@ -28,6 +28,12 @@ class Thread(db.Model):
 
     messages = db.relationship("Message", back_populates="thread", cascade="all, delete, delete-orphan")
 
+    def serialize(self):
+        return {
+            "id": str(self.id),
+            "title": str(self.title)
+        }
+
 
 class Message(db.Model):
     message_id = db.Column(db.Integer, unique=True, primary_key=True)
@@ -43,6 +49,15 @@ class Message(db.Model):
     media = db.relationship("Media", back_populates="message", cascade="all, delete")
     user = db.relationship("User", back_populates="messages")
 
+    def serialize(self):
+        return {
+            "message_id": str(self.message_id),
+            "message_content": str(self.message_content),
+            "timestamp": str(self.timestamp),
+            "sender_id": str(self.sender_id),
+            "thread_ID": str(self.thread_ID),
+            "parent_ID": str(self.parent_ID)
+        }
 
 class User(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True)
