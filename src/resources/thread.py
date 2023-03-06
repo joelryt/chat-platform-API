@@ -113,7 +113,7 @@ class ThreadCollection(Resource):
 
         thread = Thread()
         thread.deserialize(request.json)
-        #thread.thread_id = thread
+        thread.thread_id = thread
         db.session.add(thread)
         db.session.commit()
         thread_uri = api.url_for(ThreadItem, thread=thread)

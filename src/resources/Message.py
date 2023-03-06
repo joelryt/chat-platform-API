@@ -151,7 +151,7 @@ class MessageCollection(Resource):
 
         message = Message()
         message.deserialize(request.json)
-        message.message_id = message #HOOOOOOX
+        message.message_id = message
         db.session.add(message)
         db.session.commit()
         message_uri = api.url_for(MessageItem, message=message)
