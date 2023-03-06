@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.models import User
 from src.app import db
+from src.resources.auth import require_login
 
 
 class UserCollection(Resource):
@@ -43,6 +44,7 @@ class UserItem(Resource):
     def get(self, user):
         return Response(headers={"Username": user.username}, status=200)
 
+    @require_login
     def put(self, user):
         if not request.json:
             raise UnsupportedMediaType
@@ -64,6 +66,7 @@ class UserItem(Resource):
             ) from exc
         return Response(status=204)
 
+    @require_login
     def delete(self, user):
         db.session.delete(user)
         db.session.commit()

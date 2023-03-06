@@ -3,10 +3,28 @@ from flask_restful import Resource
 from flask import Response, request
 from werkzeug.exceptions import NotFound, UnsupportedMediaType, BadRequest, Unauthorized
 from jsonschema import validate, ValidationError
-from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import Forbidden
 
 from src.models import User, ApiKey
 from src.app import db
+
+
+# Modified from Exercise 2 Validating Keys example
+# https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/implementing-rest-apis-with-flask/#validating-keys
+def require_login(func):
+    def wrapper(self, user, *args, **kwargs):
+        try:
+            print('Api-key:', request.headers["Api-key"])
+            token = request.headers["Api-key"].strip()
+        except KeyError:
+            raise Forbidden
+        key_hash = ApiKey.key_hash(token)
+        db_key = ApiKey.query.filter_by(user=user).first()
+        if db_key is not None and secrets.compare_digest(key_hash, db_key.key):
+            print('asdasdasd')
+            return func(self, user, *args, **kwargs)
+        raise Forbidden
+    return wrapper
 
 
 class UserLogin(Resource):
@@ -32,22 +50,20 @@ class UserLogin(Resource):
             raise Unauthorized
 
         key = ApiKey()
-        key.key = ApiKey.key_hash(secrets.token_urlsafe())
+        token = secrets.token_urlsafe()
+        key.key = ApiKey.key_hash(token)
         key.user = db_user
-        try:
-            db.session.add(key)
-            db.session.commit()
-        except IntegrityError:
-            # Get the key that is already associated with the user
-            key = ApiKey.query.filter_by(user=db_user).first()
+        db.session.add(key)
+        db.session.commit()
 
-        return Response(headers={"Api-key": key.key}, status=201)
+        return Response(headers={"Api-key": token}, status=201)
 
 
 class UserLogout(Resource):
     """
-    Deletes the existing API connected to the user on logout.
+    Deletes the existing API key connected to the user on logout.
     """
+    @require_login
     def post(self, user):
         db_key = ApiKey.query.filter_by(user=user).first()
         if db_key is None:

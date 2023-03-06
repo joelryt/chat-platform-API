@@ -43,11 +43,17 @@ def _get_user(username="username", password="password"):
 
 
 def _login(client, username="user1", password="password"):
+    """
+    Helper function to log in as a user.
+    Returns the created API key for the logged-in user that can be used in
+    testing requests that require authentication.
+    """
     resp = client.post(
         "/api/login/",
         json={"username": username, "password": password}
     )
-    return resp
+    return resp.headers["Api-key"]
+
 
 class TestUserCollection(object):
 
@@ -113,27 +119,28 @@ class TestUserItem(object):
         Case 4: Put invalid user -> 400
         Case 5: Put to non-existing resource -> 404
         """
+        key = _login(client)
         user = _get_user(username="user1")
         # Case 1
-        resp = client.put(self.RESOURCE_URL, json=user)
+        resp = client.put(self.RESOURCE_URL, headers={"Api-key": key}, json=user)
         assert resp.status_code == 204
 
         # Case 2
         user["password"] = "new password"
-        resp = client.put(self.RESOURCE_URL, json=user)
+        resp = client.put(self.RESOURCE_URL, headers={"Api-key": key}, json=user)
         assert resp.status_code == 204
 
         # Case 3
-        resp = client.put(self.RESOURCE_URL, data="non-json data")
+        resp = client.put(self.RESOURCE_URL, headers={"Api-key": key}, data="non-json data")
         assert resp.status_code in [400, 415]
 
         # Case 4
         invalid_user = _get_user(username=None)
-        resp = client.put(self.RESOURCE_URL, json=invalid_user)
+        resp = client.put(self.RESOURCE_URL, headers={"Api-key": key}, json=invalid_user)
         assert resp.status_code == 400
 
         # Case 5
-        resp = client.put(self.INVALID_URL, json=user)
+        resp = client.put(self.INVALID_URL, headers={"Api-key": key}, json=user)
         assert resp.status_code == 404
 
     def test_delete(self, client):
@@ -144,7 +151,8 @@ class TestUserItem(object):
         Case 3: Delete non-existing resource -> 404
         """
         # Case 1
-        resp = client.delete(self.RESOURCE_URL)
+        key = _login(client)
+        resp = client.delete(self.RESOURCE_URL, headers={"Api-key": key})
         assert resp.status_code == 204
 
         # Case 2
@@ -204,18 +212,46 @@ class TestUserLogout(object):
         """
         Tests the logout interface.
         Case 1: Logout with logged-in user -> 200
-        Case 2: Logout user with no API key -> 404
         Case 3: Logout non-existing user -> 404
         """
         # Case 1
-        _login(client)
-        resp = client.post(self.RESOURCE_URL)
+        key = _login(client)
+        resp = client.post(self.RESOURCE_URL, headers={"Api-key": key})
         assert resp.status_code == 200
-
-        # Case 2
-        resp = client.post(self.RESOURCE_URL)
-        assert resp.status_code == 404
 
         # Case 3
         resp = client.post(self.INVALID_URL)
         assert resp.status_code == 404
+
+
+class TestRequireLogin(object):
+
+    RESOURCE_URL1 = "/api/users/user1/"
+    RESOURCE_URL2 = "/api/users/user2/"
+
+    def test_require_login(self, client):
+        """
+        Tests the functionality of the require_login decorator.
+        Case 1: Delete user with correct API key -> 204
+        Case 2: Delete user without connected API key -> 403
+        Case 3: Delete user with incorrect API key -> 403
+        Case 4: Delete user without API key -> 403
+        """
+        # Case 1
+        key = _login(client)
+        resp = client.delete(self.RESOURCE_URL1, headers={"Api-key": key})
+        assert resp.status_code == 204
+
+        # Case 2
+        resp = client.delete(self.RESOURCE_URL2, headers={"Api-key": key})
+        assert resp.status_code == 403
+
+        # Case 3
+        _login(client, username="user2", password="password")
+        key = _login(client, username="user3", password="password")
+        resp = client.delete(self.RESOURCE_URL2, headers={"Api-key": key})
+        assert resp.status_code == 403
+
+        # Case 4
+        resp = client.delete(self.RESOURCE_URL2, headers={"Api-key": None})
+        assert resp.status_code == 403

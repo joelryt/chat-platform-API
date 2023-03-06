@@ -1,9 +1,6 @@
 import datetime
-import secrets
-from flask import request
-from werkzeug.exceptions import Forbidden
 from src.app import db
-from src.models import Thread, Message, User, Reaction, Media, ApiKey
+from src.models import Thread, Message, User, Reaction, Media
 
 
 def sample_database():
