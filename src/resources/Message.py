@@ -126,7 +126,7 @@ class MessageItem(Resource):
 
 class MessageConverter(BaseConverter):
     def to_python(self, message_id):
-        db_message = Message.query.filter_by(name=message_id).first()
+        db_message = Message.query.filter_by(message_id=message_id).first()
         if db_message is None:
             raise NotFound
         return db_message
