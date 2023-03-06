@@ -91,7 +91,6 @@ class Reaction(db.Model):
                 "user_id": str(self.user_id),
                 "message_id": str(self.message_id)
             }
-            print("Serializing Reaction object to JSON:", data)
             return data
 
     @staticmethod
