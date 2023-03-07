@@ -1,5 +1,6 @@
 import click
 import hashlib
+from datetime import datetime
 from src.app import db
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -21,8 +22,8 @@ class Thread(db.Model):
 
     def serialize(self):
         return {
-            "Thread": f"thread-{self.id}",
-            "Title": self.title
+            "thread_id": self.id,
+            "title": self.title
         }
 
     def deserialize(self, doc):
@@ -48,8 +49,8 @@ class Message(db.Model):
     message_content = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
-    thread_ID = db.Column(db.Integer, db.ForeignKey('thread.id', ondelete="CASCADE"), nullable=False)
-    parent_ID = db.Column(db.Integer, db.ForeignKey('message.message_id', ondelete="CASCADE"))
+    thread_id = db.Column(db.Integer, db.ForeignKey('thread.id', ondelete="CASCADE"), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('message.message_id', ondelete="CASCADE"))
 
     parent = db.relationship("Message", remote_side=[message_id])
     thread = db.relationship("Thread", back_populates="messages")
@@ -59,28 +60,27 @@ class Message(db.Model):
     
     def serialize(self):
         return {
-            "message_id": f"thread-{self.message_id}",
+            "message_id": self.message_id,
             "message_content": self.message_content,
             "timestamp": self.timestamp,
-            "sender_id": f"thread-{self.sender_id}",
-            "thread_ID": f"thread-{self.thread_ID}",
-            "parent_ID": f"thread-{self.parent_ID}"
+            "sender_id": self.sender_id,
+            "thread_ID": self.thread_id,
+            "parent_ID": self.parent_id
         }
 
     def deserialize(self, doc):
         self.message_content = doc["message_content"]
-        self.timestamp = doc["timestamp"]
+        self.timestamp = datetime.fromisoformat(doc["timestamp"])
         self.sender_id = doc["sender_id"]
-        self.thread_ID = doc["thread_ID"]
-        self.parent_ID = doc["parent_ID"]
-        
+        self.thread_id = doc["thread_id"]
+        self.parent_id = doc.get("parent_id")
 
     @staticmethod
     def json_schema():
         schema = {
             "type": "object",
             "required": ["message_content", "timestamp",
-            "sender_id", "thread_ID", "parent_ID"]
+                         "sender_id", "thread_id"]
         }
         props = schema["properties"] = {}
         props["message_content"] = {
@@ -90,19 +90,16 @@ class Message(db.Model):
         }
         props["timestamp"] = {
             "description": "Message timestamp",
-            "type": "datetime"
+            "type": "string",
+            "format": "date-time"
         }
         props["sender_id"] = {
             "description": "Message sender identification",
-            "type": "string"
+            "type": "integer"
         }
-        props["thread_ID"] = {
+        props["thread_id"] = {
             "description": "Thread identification",
-            "type": "string"
-        }
-        props["parent_ID"] = {
-            "description": "Message parent",
-            "type": "string"
+            "type": "integer"
         }
         return schema
 
@@ -115,6 +112,12 @@ class User(db.Model):
     messages = db.relationship("Message", back_populates="user", cascade="all, delete")
     reactions = db.relationship("Reaction", back_populates="user", cascade="all, delete")
     key = db.relationship("ApiKey", back_populates="user", uselist=False)
+
+    def serialize(self):
+        return {
+            "user_id": self.id,
+            "username": self.username
+        }
 
     def deserialize(self, doc):
         self.username = doc["username"]

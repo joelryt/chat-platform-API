@@ -2,6 +2,8 @@ import os
 import re
 import pytest
 import tempfile
+import pytz
+from datetime import datetime
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
@@ -49,6 +51,17 @@ def _get_reaction(reaction_type=1, user_id=1, message_id=1):
 
 def _get_thread(title="Thread title"):
     return {"title": title}
+
+
+def _get_message(message_content="message content", timestamp=datetime.now(pytz.utc).isoformat(),
+                 sender_id=1, thread_id=1, parent_id=None):
+    return {
+        "message_content": message_content,
+        "timestamp": timestamp,
+        "sender_id": sender_id,
+        "thread_id": thread_id,
+        "parent_id": parent_id
+    }
 
 
 def _login(client, username="user1", password="password"):
@@ -113,7 +126,7 @@ class TestUserItem(object):
         # Case 1
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
-        assert resp.headers["Username"] == self.RESOURCE_URL.split("/")[-2]
+        assert resp.headers["username"] == self.RESOURCE_URL.split("/")[-2]
 
         # Case 2
         resp = client.get(self.INVALID_URL)
@@ -412,7 +425,7 @@ class TestThreadItem(object):
         # Case 1
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
-        assert resp.headers["Title"] == "Thread title"
+        assert resp.headers["title"] == "Thread title"
 
         # Case 2
         resp = client.get(self.INVALID_URL)
@@ -448,4 +461,88 @@ class TestThreadItem(object):
 
         # Case 5
         resp = client.put(self.INVALID_URL, json=thread)
+        assert resp.status_code == 404
+
+
+class TestMessageCollection(object):
+
+    RESOURCE_URL = "/api/messages/"
+
+    def test_post(self, client):
+        """
+        Tests posting to message collection.
+        Case 1: Valid message posted -> 201
+        Case 2: Non-json data posted -> 400/415
+        Case 3: Invalid message posted -> 400
+        """
+        message = _get_message()
+        # Case 1
+        resp = client.post(self.RESOURCE_URL, json=message)
+        assert resp.status_code == 201
+        print(resp.headers["Location"])
+        assert re.match(f"{self.RESOURCE_URL}message-\\d/", resp.headers["Location"])
+        # Check that user exists after posting it
+        resp = client.get(resp.headers["Location"])
+        assert resp.status_code == 200
+
+        # Case 2
+        resp = client.post(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 3
+        invalid_message = _get_message(message_content=None)
+        resp = client.post(self.RESOURCE_URL, json=invalid_message)
+        assert resp.status_code == 400
+
+
+class TestMessageItem(object):
+
+    RESOURCE_URL = "/api/messages/message-1/"
+    INVALID_URL = "/api/messages/non-existing-message/"
+
+    def test_get(self, client):
+        """
+        Tests get method for message item.
+        Case 1: Get existing message -> 200
+        Case 2: Get non-existing message -> 404
+        """
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert resp.headers["message_content"] == "Thread opening message"
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+    def test_put(self, client):
+        """
+        Tests put method for message item.
+        Case 1: Put valid message -> 204
+        Case 2: Change existing message's content -> 204
+        Case 3: Put non-json data -> 400/415
+        Case 4: Put invalid message -> 400
+        Case 5: Put to non-existing resource -> 404
+        """
+        message = _get_message()
+        # Case 1
+        resp = client.put(self.RESOURCE_URL, json=message)
+        assert resp.status_code == 204
+
+        # Case 2
+        message["message_content"] = "New content"
+        resp = client.put(self.RESOURCE_URL, json=message)
+        assert resp.status_code == 204
+
+        # Case 3
+        resp = client.put(self.RESOURCE_URL, data="non-json data")
+        assert resp.status_code in [400, 415]
+
+        # Case 4
+        invalid_message = _get_message(message_content=None)
+        resp = client.put(self.RESOURCE_URL, json=invalid_message)
+        assert resp.status_code == 400
+
+        # Case 5
+        resp = client.put(self.INVALID_URL, json=message)
         assert resp.status_code == 404

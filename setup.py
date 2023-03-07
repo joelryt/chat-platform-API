@@ -11,6 +11,8 @@ setup(
         "Flask-SQLAlchemy",
         "SQLAlchemy",
         "flask_restful",
-        "jsonschema"
+        "jsonschema",
+        "rfc3339-validator",
+        "pytz"
     ]
 )

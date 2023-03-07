@@ -29,9 +29,7 @@ class ThreadCollection(Resource):
             db.session.add(thread)
             db.session.commit()
         except IntegrityError as exc:
-            raise Conflict(
-                f"Thread with id {request.json['id']} already exists."
-            ) from exc
+            raise Conflict() from exc
         from src.api import api
         uri = api.url_for(ThreadItem, thread=thread)
         return Response(headers={"Location": uri}, status=201)
@@ -58,9 +56,7 @@ class ThreadItem(Resource):
         try:
             db.session.commit()
         except IntegrityError as exc:
-            raise Conflict(
-                f"Thread with id {request.json['id']} already exists."
-            ) from exc
+            raise Conflict() from exc
         return Response(status=204)
 
     def delete(self, thread):

@@ -127,9 +127,9 @@ def test_message_relationships(app):
         message1 = _get_message(user=user, thread=thread)
         message2 = _get_message(user=user, thread=thread, parent=message1)
 
-        assert message1.thread_ID == thread.id
-        assert message2.thread_ID == thread.id
-        assert message2.parent_ID == message1.message_id
+        assert message1.thread_id == thread.id
+        assert message2.thread_id == thread.id
+        assert message2.parent_id == message1.message_id
         assert message1.sender_id == user.id
         assert message2.sender_id == user.id
 

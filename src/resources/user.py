@@ -42,7 +42,7 @@ class UserCollection(Resource):
 class UserItem(Resource):
 
     def get(self, user):
-        return Response(headers={"Username": user.username}, status=200)
+        return Response(headers=user.serialize(), status=200)
 
     @require_login
     def put(self, user):
