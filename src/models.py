@@ -56,6 +56,55 @@ class Message(db.Model):
     reactions = db.relationship("Reaction", back_populates="message", cascade="all, delete")
     media = db.relationship("Media", back_populates="message", cascade="all, delete")
     user = db.relationship("User", back_populates="messages")
+    
+    def serialize(self):
+        return {
+            "message_id": f"thread-{self.message_id}",
+            "message_content": self.message_content,
+            "timestamp": self.timestamp,
+            "sender_id": f"thread-{self.sender_id}",
+            "thread_ID": f"thread-{self.thread_ID}",
+            "parent_ID": f"thread-{self.parent_ID}"
+        }
+
+    def deserialize(self, doc):
+        self.message_content = doc["message_content"]
+        self.timestamp = doc["timestamp"]
+        self.sender_id = doc["sender_id"]
+        self.thread_ID = doc["thread_ID"]
+        self.parent_ID = doc["parent_ID"]
+        
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["message_content", "timestamp",
+            "sender_id", "thread_ID", "parent_ID"]
+        }
+        props = schema["properties"] = {}
+        props["message_content"] = {
+            "description": "Message content",
+            "type": "string",
+            "maxLength": 500
+        }
+        props["timestamp"] = {
+            "description": "Message timestamp",
+            "type": "datetime"
+        }
+        props["sender_id"] = {
+            "description": "Message sender identification",
+            "type": "string"
+        }
+        props["thread_ID"] = {
+            "description": "Thread identification",
+            "type": "string"
+        }
+        props["parent_ID"] = {
+            "description": "Message parent",
+            "type": "string"
+        }
+        return schema
 
 
 class User(db.Model):
