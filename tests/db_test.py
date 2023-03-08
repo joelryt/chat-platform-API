@@ -346,18 +346,6 @@ def test_media_columns(app):
         user = _get_user()
         thread = _get_thread()
         message = _get_message(user, thread)
-        media1 = _get_media(message=message)
-        media2 = _get_media(message=message)
-        db.session.add(user)
-        db.session.add(thread)
-        db.session.add(message)
-        db.session.add(media1)
-        db.session.add(media2)
-        with pytest.raises(IntegrityError):
-            db.session.commit()
-
-        db.session.rollback()
-
         media = _get_media(message=None)
         db.session.add(user)
         db.session.add(thread)

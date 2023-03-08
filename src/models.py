@@ -190,10 +190,44 @@ class Reaction(db.Model):
 
 
 class Media(db.Model):
-    media_url = db.Column(db.String(128), primary_key=True)
+    media_id = db.Column(db.Integer, primary_key=True)
+    media_url = db.Column(db.String(128), nullable=False)
     message_id = db.Column(db.Integer, db.ForeignKey("message.message_id", ondelete="CASCADE"), nullable=False)
 
     message = db.relationship("Message", back_populates="media")
+
+    def deserialize(self, doc):
+        self.media_url = doc["media_url"]
+        self.message_id = doc["message_id"]
+
+    def serialize(self):
+        data = {
+            "media_id": str(self.media_id),
+            "media_url": str(self.media_url),
+            "message_id": str(self.message_id)
+        }
+        return data
+    
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["media_url", "message_id"],
+        }
+        props = schema["properties"] = {}
+        props["media_url"] = {
+            "description": "Web URL to an image file",
+            "type": "string",
+            "maxLength": 128,
+            "format": "uri",
+            # Regex to check if url ends with .png or .jpg
+            "pattern": "(.png|.jpg)$"
+        }
+        props["message_id"] = {
+            "description": "Message that the image is sent with",
+            "type": "integer",
+        }
+        return schema
 
 
 class ApiKey(db.Model):
