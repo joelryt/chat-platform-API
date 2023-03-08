@@ -571,42 +571,42 @@ class TestMediaCollection(object):
 
         test_picture = "https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png"
 
-        #Case1
+        # Case1
         media = _get_media(media_url=test_picture, message_id=4)
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 201
 
-        #Case2
+        # Case2
         media = _get_media(media_url=test_picture, message_id=4)
         resp = client.post(self.INVALID_URL, json=media)
         assert resp.status_code == 404
 
-        #Case3
+        # Case3
         resp = client.post(self.RESOURCE_URL, json="non-json-data")      
         assert resp.status_code in [400, 415]
 
-        #Case4
+        # Case4
         media = _get_media(media_url=test_picture, message_id=4)
         resp = client.get(self.RESOURCE_URL, json=media)
         assert resp.status_code == 405
 
-        #Case5
+        # Case5
         media = _get_media(media_url="https://upload.wikimedia.org/wikipedia/commons/5/51/Google", message_id=4)
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 400
 
-        #Case6
+        # Case6
         media = _get_media(media_url="", message_id=4)
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 400
 
-        #Case5
+        # Case5
         too_long_url = "a" * 130 + ".png"
         media = _get_media(media_url=too_long_url, message_id=4)
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 400
 
-        #Case8
+        # Case8
         media = _get_media(media_url=test_picture, message_id=50000)
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 409
@@ -624,11 +624,11 @@ class TestMediaItem(object):
         Case2: Get non-existing media -> 404
         """
 
-        #Case1
+        # Case1
         resp = client.get(self.VALID_URL)
         assert resp.status_code == 200
 
-        #Case2
+        # Case2
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
 
@@ -647,23 +647,24 @@ class TestMediaItem(object):
         media1 = _get_media(media_url=test_picture, message_id=2)
         media2 = _get_media(media_url="aaaaa", message_id=4)
 
-        #Case1
+        # Case1
         resp = client.put(self.VALID_URL, json=media)
         assert resp.status_code == 204
 
-        #Case2
+        # Case2
         resp = client.put(self.VALID_URL, json=media1)
+
         assert resp.status_code == 204
 
-        #Case3
+        # Case3
         resp = client.put(self.VALID_URL, json="non-json-data")
         assert resp.status_code in [400, 415]
 
-        #Case4
+        # Case4
         resp = client.put(self.VALID_URL, json=media2)
         assert resp.status_code == 400
 
-        #Case5
+        # Case5
         resp = client.put(self.INVALID_URL, json=media)
         assert resp.status_code == 404
 
@@ -674,14 +675,14 @@ class TestMediaItem(object):
         Case 3: Delete non-existing media -> 404
         """
 
-        #Case1
+        # Case1
         resp = client.delete(self.VALID_URL)
         assert resp.status_code == 204
 
-        #Case2
+        # Case2
         resp = client.delete(self.VALID_URL)
         assert resp.status_code == 404
 
-        #Case3
+        # Case3
         resp = client.delete(self.INVALID_URL)
         assert resp.status_code == 404

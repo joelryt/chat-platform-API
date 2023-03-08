@@ -54,8 +54,7 @@ class MediaItem(Resource):
 
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
-        
-        media = Media()
+
         media.deserialize(request.json)
         try:
             db.session.commit()
@@ -78,17 +77,3 @@ class MediaConverter(BaseConverter):
     
     def to_url(self, db_media):
         return str(db_media.media_id)
-
-#API
-#app.url_map.converters["media"] = MediaConverter
-#api.add_resource(MediaCollection, "/api/media/")
-#api.add_resource(MediaItem, "/api/media/<media:media>/")
-
-#models
-#class Media(db.Model):
-#    media_id = db.Column(db.Integer, primary_key=True)
-#    media_url = db.Column(db.String(128), nullable=False)
-#    message_id = db.Column(db.Integer, db.ForeignKey("message.message_id", ondelete="CASCADE"), nullable=False)
-
-#    message = db.relationship("Message", back_populates="media")
-

@@ -220,15 +220,14 @@ class Media(db.Model):
             "type": "string",
             "maxLength": 128,
             "format": "uri",
+            # Regex to check if url ends with .png or .jpg
             "pattern": "(.png|.jpg)$"
         }
-        #Regex to check if url ends with .png or .jpg
         props["message_id"] = {
             "description": "Message that the image is sent with",
             "type": "integer",
         }
         return schema
-
 
 
 class ApiKey(db.Model):
