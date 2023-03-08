@@ -467,6 +467,25 @@ class TestThreadItem(object):
         resp = client.put(self.INVALID_URL, json=thread)
         assert resp.status_code == 404
 
+    def test_delete(self, client):
+        """
+        Tests delete method for thread item.
+        Case 1: Delete existing thread -> 204
+        Case 2: Delete previously deleted thread -> 404
+        Case 3: Delete non-existing resource -> 404
+        """
+        # Case 1
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+
+        # Case 2
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+
+        # Case 3
+        resp = client.delete(self.INVALID_URL)
+        assert resp.status_code == 404
+
 
 class TestMessageCollection(object):
 
@@ -550,6 +569,26 @@ class TestMessageItem(object):
         # Case 5
         resp = client.put(self.INVALID_URL, json=message)
         assert resp.status_code == 404
+
+    def test_delete(self, client):
+        """
+        Tests delete method for message item.
+        Case 1: Delete existing message -> 204
+        Case 2: Delete previously deleted message -> 404
+        Case 3: Delete non-existing resource -> 404
+        """
+        # Case 1
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+
+        # Case 2
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+
+        # Case 3
+        resp = client.delete(self.INVALID_URL)
+        assert resp.status_code == 404
+
 
 class TestMediaCollection(object):
 
