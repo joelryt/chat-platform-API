@@ -20,15 +20,22 @@ class ReactionCollection(Resource):
         reaction = Reaction()
         reaction.deserialize(request.json)
         # Check if reaction already exists
-        existing_reaction = Reaction.query.filter_by(user_id=reaction.user_id, message_id=reaction.message_id).first()
+        existing_reaction = Reaction.query.filter_by(
+            user_id=reaction.user_id, message_id=reaction.message_id
+        ).first()
         if existing_reaction is not None:
-            raise Conflict(f"User {reaction.user_id} has already reacted to the message with id {reaction.message_id}")
+            raise Conflict(
+                f"User {reaction.user_id} has already reacted to the message with id {reaction.message_id}"
+            )
         try:
             db.session.add(reaction)
             db.session.commit()
         except IntegrityError as exc:
-            raise Conflict(f"Reaction with id {request.json['reaction_id']} already exists") from exc
+            raise Conflict(
+                f"Reaction with id {request.json['reaction_id']} already exists"
+            ) from exc
         from src.api import api
+
         aaa = api.url_for(ReactionItem, reaction=reaction)
         return Response(headers={"Location": aaa}, status=201)
 
@@ -38,12 +45,12 @@ class ReactionItem(Resource):
         response_data = reaction.serialize()
         response_data["reaction"] = str(reaction.reaction_id)
         return Response(headers=response_data, status=200)
-    
+
     def delete(self, reaction):
         db.session.delete(reaction)
         db.session.commit()
         return Response(status=204)
-    
+
     def put(self, reaction):
         if not request.json:
             raise UnsupportedMediaType
@@ -56,7 +63,9 @@ class ReactionItem(Resource):
             db.session.add(reaction)
             db.session.commit()
         except IntegrityError as exc:
-            raise Conflict(f"Reaction with id {request.json['reaction_id']} already exists") from exc
+            raise Conflict(
+                f"Reaction with id {request.json['reaction_id']} already exists"
+            ) from exc
         return Response(status=204)
 
 

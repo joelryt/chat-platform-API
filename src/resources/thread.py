@@ -10,16 +10,12 @@ from src.app import db
 
 
 class ThreadCollection(Resource):
-
     def post(self):
         if not request.json:
             raise UnsupportedMediaType
 
         try:
-            validate(
-                request.json,
-                Thread.json_schema()
-            )
+            validate(request.json, Thread.json_schema())
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
 
@@ -31,12 +27,12 @@ class ThreadCollection(Resource):
         except IntegrityError as exc:
             raise Conflict() from exc
         from src.api import api
+
         uri = api.url_for(ThreadItem, thread=thread)
         return Response(headers={"Location": uri}, status=201)
 
 
 class ThreadItem(Resource):
-
     def get(self, thread):
         return Response(headers=thread.serialize(), status=200)
 
@@ -45,10 +41,7 @@ class ThreadItem(Resource):
             raise UnsupportedMediaType
 
         try:
-            validate(
-                request.json,
-                Thread.json_schema()
-            )
+            validate(request.json, Thread.json_schema())
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
 
@@ -66,7 +59,6 @@ class ThreadItem(Resource):
 
 
 class ThreadConverter(BaseConverter):
-
     def to_python(self, thread_id):
         id = thread_id.split("-")[-1]
         db_thread = Thread.query.filter_by(id=id).first()

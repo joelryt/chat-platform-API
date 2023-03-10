@@ -21,10 +21,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 @pytest.fixture
 def app():
     db_fd, db_fname = tempfile.mkstemp()
-    config = {
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
-        "TESTING": True
-    }
+    config = {"SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname, "TESTING": True}
     app = create_app(config)
 
     with app.app_context():
@@ -37,9 +34,7 @@ def app():
 
 
 def _get_thread():
-    return Thread(
-        title="thread title"
-    )
+    return Thread(title="thread title")
 
 
 def _get_message(user=None, thread=None, parent=None):
@@ -48,37 +43,24 @@ def _get_message(user=None, thread=None, parent=None):
         timestamp=datetime.now(),
         user=user,
         thread=thread,
-        parent=parent
+        parent=parent,
     )
 
 
 def _get_user(username="username"):
-    return User(
-        username=username,
-        password=User.password_hash("password")
-    )
+    return User(username=username, password=User.password_hash("password"))
 
 
 def _get_reaction(user=None, message=None):
-    return Reaction(
-        reaction_type=1,
-        user=user,
-        message=message
-    )
+    return Reaction(reaction_type=1, user=user, message=message)
 
 
 def _get_media(media_url="url", message=None):
-    return Media(
-        media_url=media_url,
-        message=message
-    )
+    return Media(media_url=media_url, message=message)
 
 
 def _get_apikey(user=None):
-    return ApiKey(
-        key=ApiKey.key_hash(secrets.token_urlsafe()),
-        user=user
-    )
+    return ApiKey(key=ApiKey.key_hash(secrets.token_urlsafe()), user=user)
 
 
 def test_create_instances(app):

@@ -10,7 +10,6 @@ from src.app import db
 
 
 class MessageCollection(Resource):
-
     def post(self):
         if not request.json:
             raise UnsupportedMediaType
@@ -19,7 +18,7 @@ class MessageCollection(Resource):
             validate(
                 request.json,
                 Message.json_schema(),
-                format_checker=draft7_format_checker
+                format_checker=draft7_format_checker,
             )
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
@@ -32,12 +31,12 @@ class MessageCollection(Resource):
         except IntegrityError as exc:
             raise Conflict() from exc
         from src.api import api
+
         uri = api.url_for(MessageItem, message=message)
         return Response(headers={"Location": uri}, status=201)
 
 
 class MessageItem(Resource):
-
     def get(self, message):
         return Response(headers=message.serialize(), status=200)
 
@@ -49,7 +48,7 @@ class MessageItem(Resource):
             validate(
                 request.json,
                 Message.json_schema(),
-                format_checker=draft7_format_checker
+                format_checker=draft7_format_checker,
             )
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
@@ -68,7 +67,6 @@ class MessageItem(Resource):
 
 
 class MessageConverter(BaseConverter):
-
     def to_python(self, message_id):
         id = message_id.split("-")[-1]
         db_message = Message.query.filter_by(message_id=id).first()

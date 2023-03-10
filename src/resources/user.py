@@ -11,17 +11,13 @@ from src.resources.auth import require_login
 
 
 class UserCollection(Resource):
-
     # Register new user
     def post(self):
         if not request.json:
             raise UnsupportedMediaType
 
         try:
-            validate(
-                request.json,
-                User.json_schema()
-            )
+            validate(request.json, User.json_schema())
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
 
@@ -35,12 +31,12 @@ class UserCollection(Resource):
                 f"Username {request.json['username']} already exists."
             ) from exc
         from src.api import api
+
         uri = api.url_for(UserItem, user=user)
         return Response(headers={"Location": uri}, status=201)
 
 
 class UserItem(Resource):
-
     def get(self, user):
         return Response(headers=user.serialize(), status=200)
 
@@ -50,10 +46,7 @@ class UserItem(Resource):
             raise UnsupportedMediaType
 
         try:
-            validate(
-                request.json,
-                User.json_schema()
-            )
+            validate(request.json, User.json_schema())
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
 
@@ -74,7 +67,6 @@ class UserItem(Resource):
 
 
 class UserConverter(BaseConverter):
-
     def to_python(self, username):
         db_user = User.query.filter_by(username=username).first()
         if db_user is None:

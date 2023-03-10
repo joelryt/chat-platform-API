@@ -13,6 +13,6 @@ setup(
         "flask_restful",
         "jsonschema",
         "rfc3339-validator",
-        "pytz"
-    ]
+        "pytz",
+    ],
 )

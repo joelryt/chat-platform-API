@@ -22,6 +22,7 @@ def require_login(func):
         if db_key is not None and secrets.compare_digest(key_hash, db_key.key):
             return func(self, user, *args, **kwargs)
         raise Forbidden
+
     return wrapper
 
 
@@ -29,15 +30,13 @@ class UserLogin(Resource):
     """
     Creates a new API key for the user on login.
     """
+
     def post(self):
         if not request.json:
             raise UnsupportedMediaType
 
         try:
-            validate(
-                request.json,
-                User.json_schema()
-            )
+            validate(request.json, User.json_schema())
         except ValidationError as exc:
             raise BadRequest(description=str(exc)) from exc
 
@@ -61,6 +60,7 @@ class UserLogout(Resource):
     """
     Deletes the existing API key connected to the user on logout.
     """
+
     @require_login
     def post(self, user):
         db_key = ApiKey.query.filter_by(user=user).first()

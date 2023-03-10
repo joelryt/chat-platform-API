@@ -10,10 +10,7 @@ from src.models import Thread, Message, User, Reaction, Media
 @pytest.fixture
 def app():
     db_fd, db_fname = tempfile.mkstemp()
-    config = {
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
-        "TESTING": True
-    }
+    config = {"SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname, "TESTING": True}
     app = create_app(config)
 
     with app.app_context():

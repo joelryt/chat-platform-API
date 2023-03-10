@@ -21,10 +21,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 @pytest.fixture
 def client():
     db_fd, db_fname = tempfile.mkstemp()
-    config = {
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
-        "TESTING": True
-    }
+    config = {"SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname, "TESTING": True}
     app = create_app(config)
 
     with app.app_context():
@@ -46,21 +43,30 @@ def _get_user(username="username", password="password"):
 
 
 def _get_reaction(reaction_type=1, user_id=1, message_id=1):
-    return {"reaction_type": reaction_type, "user_id": user_id, "message_id": message_id}
+    return {
+        "reaction_type": reaction_type,
+        "user_id": user_id,
+        "message_id": message_id,
+    }
 
 
 def _get_thread(title="Thread title"):
     return {"title": title}
 
 
-def _get_message(message_content="message content", timestamp=datetime.now(pytz.utc).isoformat(),
-                 sender_id=1, thread_id=1, parent_id=None):
+def _get_message(
+    message_content="message content",
+    timestamp=datetime.now(pytz.utc).isoformat(),
+    sender_id=1,
+    thread_id=1,
+    parent_id=None,
+):
     return {
         "message_content": message_content,
         "timestamp": timestamp,
         "sender_id": sender_id,
         "thread_id": thread_id,
-        "parent_id": parent_id
+        "parent_id": parent_id,
     }
 
 
@@ -74,15 +80,11 @@ def _login(client, username="user1", password="password"):
     Returns the created API key for the logged-in user that can be used in
     testing requests that require authentication.
     """
-    resp = client.post(
-        "/api/login/",
-        json={"username": username, "password": password}
-    )
+    resp = client.post("/api/login/", json={"username": username, "password": password})
     return resp.headers["Api-key"]
 
 
 class TestUserCollection(object):
-
     RESOURCE_URL = "/api/users/"
 
     def test_post(self, client):
@@ -97,7 +99,9 @@ class TestUserCollection(object):
         # Case 1
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 201
-        assert resp.headers["Location"].endswith(self.RESOURCE_URL + user["username"] + "/")
+        assert resp.headers["Location"].endswith(
+            self.RESOURCE_URL + user["username"] + "/"
+        )
         # Check that user exists after posting it
         resp = client.get(resp.headers["Location"])
         assert resp.status_code == 200
@@ -117,7 +121,6 @@ class TestUserCollection(object):
 
 
 class TestUserItem(object):
-
     RESOURCE_URL = "/api/users/user1/"
     INVALID_URL = "/api/users/non-existing-user/"
 
@@ -157,12 +160,16 @@ class TestUserItem(object):
         assert resp.status_code == 204
 
         # Case 3
-        resp = client.put(self.RESOURCE_URL, headers={"Api-key": key}, data="non-json data")
+        resp = client.put(
+            self.RESOURCE_URL, headers={"Api-key": key}, data="non-json data"
+        )
         assert resp.status_code in [400, 415]
 
         # Case 4
         invalid_user = _get_user(username=None)
-        resp = client.put(self.RESOURCE_URL, headers={"Api-key": key}, json=invalid_user)
+        resp = client.put(
+            self.RESOURCE_URL, headers={"Api-key": key}, json=invalid_user
+        )
         assert resp.status_code == 400
 
         # Case 5
@@ -191,7 +198,6 @@ class TestUserItem(object):
 
 
 class TestUserLogin(object):
-
     RESOURCE_URL = "/api/login/"
 
     def test_post(self, client):
@@ -230,7 +236,6 @@ class TestUserLogin(object):
 
 
 class TestUserLogout(object):
-
     RESOURCE_URL = "/api/users/user1/logout/"
     INVALID_URL = "/api/users/non-existing-user/logout/"
 
@@ -275,13 +280,14 @@ class TestReactionCollection(object):
         assert resp.status_code in [400, 415]
 
         # Case 4
-        invalid_reaction = _get_reaction(reaction_type=None, user_id=None, message_id=None)
+        invalid_reaction = _get_reaction(
+            reaction_type=None, user_id=None, message_id=None
+        )
         resp = client.post(self.RESOURCE_URL, json=invalid_reaction)
         assert resp.status_code == 400
 
 
 class TestReactionItem(object):
-
     RESOURCE_URL = "/api/reactions/2/"
     INVALID_URL = "/api/reactions/non-existing-reaction/"
 
@@ -324,7 +330,9 @@ class TestReactionItem(object):
         assert resp.status_code in [400, 415]
 
         # Case 4
-        invalid_reaction = reaction = _get_reaction(reaction_type=None, user_id=None, message_id=None)
+        invalid_reaction = reaction = _get_reaction(
+            reaction_type=None, user_id=None, message_id=None
+        )
         resp = client.put(self.RESOURCE_URL, json=invalid_reaction)
         assert resp.status_code == 400
 
@@ -353,7 +361,6 @@ class TestReactionItem(object):
 
 
 class TestRequireLogin(object):
-
     RESOURCE_URL1 = "/api/users/user1/"
     RESOURCE_URL2 = "/api/users/user2/"
 
@@ -386,7 +393,6 @@ class TestRequireLogin(object):
 
 
 class TestThreadCollection(object):
-
     RESOURCE_URL = "/api/threads/"
 
     def test_post(self, client):
@@ -416,7 +422,6 @@ class TestThreadCollection(object):
 
 
 class TestThreadItem(object):
-
     RESOURCE_URL = "/api/threads/thread-1/"
     INVALID_URL = "/api/threads/non-existing-thread/"
 
@@ -488,7 +493,6 @@ class TestThreadItem(object):
 
 
 class TestMessageCollection(object):
-
     RESOURCE_URL = "/api/messages/"
 
     def test_post(self, client):
@@ -519,7 +523,6 @@ class TestMessageCollection(object):
 
 
 class TestMessageItem(object):
-
     RESOURCE_URL = "/api/messages/message-1/"
     INVALID_URL = "/api/messages/non-existing-message/"
 
@@ -591,7 +594,6 @@ class TestMessageItem(object):
 
 
 class TestMediaCollection(object):
-
     RESOURCE_URL = "/api/media/"
     INVALID_URL = "/api/mediaaaaaaaaa/"
 
@@ -607,7 +609,6 @@ class TestMediaCollection(object):
     """
 
     def test_post(self, client):
-
         test_picture = "https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png"
 
         # Case1
@@ -621,7 +622,7 @@ class TestMediaCollection(object):
         assert resp.status_code == 404
 
         # Case3
-        resp = client.post(self.RESOURCE_URL, json="non-json-data")      
+        resp = client.post(self.RESOURCE_URL, json="non-json-data")
         assert resp.status_code in [400, 415]
 
         # Case4
@@ -630,7 +631,10 @@ class TestMediaCollection(object):
         assert resp.status_code == 405
 
         # Case5
-        media = _get_media(media_url="https://upload.wikimedia.org/wikipedia/commons/5/51/Google", message_id=4)
+        media = _get_media(
+            media_url="https://upload.wikimedia.org/wikipedia/commons/5/51/Google",
+            message_id=4,
+        )
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 400
 
@@ -652,12 +656,10 @@ class TestMediaCollection(object):
 
 
 class TestMediaItem(object):
-
     VALID_URL = "/api/media/3/"
     INVALID_URL = "/api/media/23456/"
 
     def test_get(self, client):
-
         """
         Case1: Get valid media -> 200
         Case2: Get non-existing media -> 404
@@ -672,7 +674,6 @@ class TestMediaItem(object):
         assert resp.status_code == 404
 
     def test_put(self, client):
-
         """
         Case1: Valid Put -> 204
         Case2: Change message_id -> 204
@@ -680,7 +681,7 @@ class TestMediaItem(object):
         Case 4: Put invalid media_url -> 400
         Case 5: Put to non-existing resource -> 404
         """
-        
+
         test_picture = "https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png"
         media = _get_media(media_url=test_picture, message_id=4)
         media1 = _get_media(media_url=test_picture, message_id=2)
