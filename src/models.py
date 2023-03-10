@@ -248,6 +248,7 @@ def init_db():
 
 
 @click.command("populate-db")
+@with_appcontext
 def populate_db():
     from src.utils import sample_database
     sample_database()
