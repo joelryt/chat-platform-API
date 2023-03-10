@@ -14,7 +14,6 @@ from src.app import db
 def require_login(func):
     def wrapper(self, user, *args, **kwargs):
         try:
-            print('Api-key:', request.headers["Api-key"])
             token = request.headers["Api-key"].strip()
         except KeyError:
             raise Forbidden
