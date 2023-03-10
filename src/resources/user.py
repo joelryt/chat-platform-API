@@ -11,8 +11,19 @@ from src.resources.auth import require_login
 
 
 class UserCollection(Resource):
-    # Register new user
+    """
+    User collection resource.
+    """
+
     def post(self):
+        """
+        POST method for user collection.
+        Creates a new user with the request parameters and
+        adds it to the database.
+        :return:
+            On successful user creation, returns a response with
+            the created user's URI as a Location header and status 201.
+        """
         if not request.json:
             raise UnsupportedMediaType
 
@@ -37,11 +48,33 @@ class UserCollection(Resource):
 
 
 class UserItem(Resource):
+    """
+    User item resource.
+    """
+
     def get(self, user):
+        """
+        GET method for user item.
+        Fetches the requested user from the database.
+        :param user:
+            The user object that needs to be fetched from the database.
+        :return:
+            Returns a response with the fetched user object's id and
+            username attributes in the headers and status 200.
+        """
         return Response(headers=user.serialize(), status=200)
 
     @require_login
     def put(self, user):
+        """
+        PUT method for user item.
+        Rewrites an already existing user object's attributes.
+        Requires authentication.
+        :param user:
+            The user object whose attributes are being rewritten.
+        :return:
+            On successful rewrite, returns a response with status 204.
+        """
         if not request.json:
             raise UnsupportedMediaType
 
@@ -61,17 +94,45 @@ class UserItem(Resource):
 
     @require_login
     def delete(self, user):
+        """
+        DELETE method for user item.
+        Deletes an existing user object from the database.
+        Requires authentication.
+        :param user:
+            The user object that is being deleted.
+        :return:
+            Returns a response with status 204.
+        """
         db.session.delete(user)
         db.session.commit()
         return Response(status=204)
 
 
 class UserConverter(BaseConverter):
+    """
+    Converter for user URL variable.
+    """
+
     def to_python(self, username):
+        """
+        Converts the username picked from URL to corresponding
+        database user object.
+        :param username:
+            Username of the user object in the database.
+        :return:
+            Returns the user object fetched from the database.
+        """
         db_user = User.query.filter_by(username=username).first()
         if db_user is None:
             raise NotFound
         return db_user
 
     def to_url(self, db_user):
+        """
+        Uses the user object's username to create a URI for the object.
+        :param db_user:
+            The user object that the URI is created for.
+        :return:
+            Returns the user object's username attribute as the URI.
+        """
         return db_user.username
