@@ -27,16 +27,17 @@ ON DELETE relations should be specified also to the 'relationships' between clas
 
 
 ## Meeting 3.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 10.3.2023
+* **ASSISTANTS:** Mika
 
 ### Minutes
-*Summary of what was discussed during the meeting*
-
+API documentation and implementation were discussed. Main points from the documentation was that the media and reactions could be put under messages in the URL tree and that the REST conformance discussion and explanation should be more thorough. The implementation was working fine and test coverage was fine (>90%). Notes on the implementation were that the current authentication method was more of a session token than API token, docstrings were missing from the resource methods and populate-db command needs the with_appcontext decorator to work with older flask versions.
 ### Action points
-*List here the actions points discussed with assistants*
-
-
+- Change URL for media and reactions to be under messages in the URL tree
+- Make Rest conformance section in wiki more thorough, and tell how the addressability, uniform interface and statelessness is achieved in our API
+- Add docstrings to resources and their methods
+- Remove login and logout and use stateless API tokens for authentication
+- Add with_appcontext decorator for populate-db command
 
 
 ## Meeting 4.
