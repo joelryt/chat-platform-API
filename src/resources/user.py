@@ -1,3 +1,4 @@
+import secrets
 from flask_restful import Resource
 from flask import Response, request
 from werkzeug.routing import BaseConverter
@@ -5,9 +6,9 @@ from werkzeug.exceptions import NotFound, UnsupportedMediaType, BadRequest, Conf
 from jsonschema import validate, ValidationError
 from sqlalchemy.exc import IntegrityError
 
-from src.models import User
+from src.models import User, ApiKey
 from src.app import db
-from src.resources.auth import require_login
+from src.utils import require_authentication
 
 
 class UserCollection(Resource):
@@ -20,9 +21,12 @@ class UserCollection(Resource):
         POST method for user collection.
         Creates a new user with the request parameters and
         adds it to the database.
+        Creates the API key for the user and adds it to the database.
         :return:
             On successful user creation, returns a response with
-            the created user's URI as a Location header and status 201.
+            the created user's URI as a Location header,
+            the created API key as an API-key header,
+            and status 201.
         """
         if not request.json:
             raise UnsupportedMediaType
@@ -34,8 +38,13 @@ class UserCollection(Resource):
 
         user = User()
         user.deserialize(request.json)
+        key = ApiKey()
+        token = secrets.token_urlsafe()
+        key.key = ApiKey.key_hash(token)
+        key.user = user
         try:
             db.session.add(user)
+            db.session.add(key)
             db.session.commit()
         except IntegrityError as exc:
             raise Conflict(
@@ -44,7 +53,7 @@ class UserCollection(Resource):
         from src.api import api
 
         uri = api.url_for(UserItem, user=user)
-        return Response(headers={"Location": uri}, status=201)
+        return Response(headers={"Location": uri, "Api-key": token}, status=201)
 
 
 class UserItem(Resource):
@@ -64,7 +73,7 @@ class UserItem(Resource):
         """
         return Response(headers=user.serialize(), status=200)
 
-    @require_login
+    @require_authentication
     def put(self, user):
         """
         PUT method for user item.
@@ -92,7 +101,7 @@ class UserItem(Resource):
             ) from exc
         return Response(status=204)
 
-    @require_login
+    @require_authentication
     def delete(self, user):
         """
         DELETE method for user item.

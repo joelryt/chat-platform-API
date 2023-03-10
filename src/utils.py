@@ -1,6 +1,14 @@
 import datetime
+import secrets
+from flask import request
+from werkzeug.exceptions import Forbidden
 from src.app import db
-from src.models import Thread, Message, User, Reaction, Media
+from src.models import Thread, Message, User, Reaction, Media, ApiKey
+
+# API keys to be used in the sample database that can be used in testing
+KEY1 = secrets.token_urlsafe()
+KEY2 = secrets.token_urlsafe()
+KEY3 = secrets.token_urlsafe()
 
 
 def sample_database():
@@ -21,6 +29,13 @@ def sample_database():
     user1 = User(username="user1", password=User.password_hash("password"))
     user2 = User(username="user2", password=User.password_hash("password"))
     user3 = User(username="user3", password=User.password_hash("password"))
+
+    key1 = ApiKey(key=ApiKey.key_hash(KEY1))
+    key1.user = user1
+    key2 = ApiKey(key=ApiKey.key_hash(KEY2))
+    key2.user = user2
+    key3 = ApiKey(key=ApiKey.key_hash(KEY3))
+    key3.user = user3
 
     thread = Thread(title="Thread title")
     message1 = Message(
@@ -81,3 +96,20 @@ def sample_database():
     db.session.add(media3)
     db.session.add(reaction3)
     db.session.commit()
+
+
+# Modified from Exercise 2 Validating Keys example
+# https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/implementing-rest-apis-with-flask/#validating-keys
+def require_authentication(func):
+    def wrapper(self, user, *args, **kwargs):
+        try:
+            token = request.headers["Api-key"].strip()
+        except KeyError:
+            raise Forbidden
+        key_hash = ApiKey.key_hash(token)
+        db_key = ApiKey.query.filter_by(user=user).first()
+        if db_key is not None and secrets.compare_digest(key_hash, db_key.key):
+            return func(self, user, *args, **kwargs)
+        raise Forbidden
+
+    return wrapper
