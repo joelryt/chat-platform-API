@@ -1,4 +1,4 @@
-import flask.json
+import json
 from flask_restful import Resource
 from flask import Response, request
 from werkzeug.routing import BaseConverter
@@ -45,12 +45,13 @@ class MessageCollection(Resource):
         :param thread:
             Thread object from which the message collection is fetched from.
         :return:
-            Returns list of message_id attributes of all messages
-            from the collection.
+            Returns a response with a list of message_id attributes of all messages
+            from the collection in the response body and status 200.
         """
         messages = Message.query.filter_by(thread=thread).all()
         message_collection = [message.message_id for message in messages]
-        return message_collection, 200
+        body = {"message_ids": message_collection}
+        return Response(json.dumps(body), status=200, mimetype="application/json")
 
 
 class MessageItem(Resource):

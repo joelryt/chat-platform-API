@@ -1,6 +1,6 @@
 import os
 import re
-import ast
+import json
 import pytest
 import tempfile
 import pytz
@@ -460,7 +460,7 @@ class TestMessageCollection(object):
         # Case 1
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
-        assert ast.literal_eval(resp.data.decode()) == [1, 2, 3, 4]
+        assert json.loads(resp.data)["message_ids"] == [1, 2, 3, 4]
 
         # Case 2
         resp = client.get(self.INVALID_URL)
