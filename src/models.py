@@ -66,7 +66,7 @@ class Message(db.Model):
         return {
             "message_id": self.message_id,
             "message_content": self.message_content,
-            "timestamp": self.timestamp,
+            "timestamp": self.timestamp.isoformat(),
             "sender_id": self.sender_id,
             "thread_ID": self.thread_id,
             "parent_ID": self.parent_id,
@@ -76,14 +76,17 @@ class Message(db.Model):
         self.message_content = doc["message_content"]
         self.timestamp = datetime.fromisoformat(doc["timestamp"])
         self.sender_id = doc["sender_id"]
-        self.thread_id = doc["thread_id"]
         self.parent_id = doc.get("parent_id")
 
     @staticmethod
     def json_schema():
         schema = {
             "type": "object",
-            "required": ["message_content", "timestamp", "sender_id", "thread_id"],
+            "required": [
+                "message_content",
+                "timestamp",
+                "sender_id",
+            ],
         }
         props = schema["properties"] = {}
         props["message_content"] = {
@@ -100,7 +103,6 @@ class Message(db.Model):
             "description": "Message sender identification",
             "type": "integer",
         }
-        props["thread_id"] = {"description": "Thread identification", "type": "integer"}
         return schema
 
 

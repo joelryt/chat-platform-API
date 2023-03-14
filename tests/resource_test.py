@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import pytest
 import tempfile
 import pytz
@@ -58,14 +59,12 @@ def _get_message(
     message_content="message content",
     timestamp=datetime.now(pytz.utc).isoformat(),
     sender_id=1,
-    thread_id=1,
     parent_id=None,
 ):
     return {
         "message_content": message_content,
         "timestamp": timestamp,
         "sender_id": sender_id,
-        "thread_id": thread_id,
         "parent_id": parent_id,
     }
 
@@ -424,7 +423,8 @@ class TestThreadItem(object):
 
 
 class TestMessageCollection(object):
-    RESOURCE_URL = "/api/messages/"
+    RESOURCE_URL = "/api/threads/thread-1/messages/"
+    INVALID_URL = "/api/threads/thread-2/messages/"
 
     def test_post(self, client):
         """
@@ -437,7 +437,6 @@ class TestMessageCollection(object):
         # Case 1
         resp = client.post(self.RESOURCE_URL, json=message)
         assert resp.status_code == 201
-        print(resp.headers["Location"])
         assert re.match(f"{self.RESOURCE_URL}message-\\d/", resp.headers["Location"])
         # Check that user exists after posting it
         resp = client.get(resp.headers["Location"])
@@ -452,10 +451,25 @@ class TestMessageCollection(object):
         resp = client.post(self.RESOURCE_URL, json=invalid_message)
         assert resp.status_code == 400
 
+    def test_get(self, client):
+        """
+        Tests get method for message collection.
+        Case 1: Get method collection -> 200
+        Case 2: Get non-existing method collection -> 404
+        """
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert json.loads(resp.data)["message_ids"] == [1, 2, 3, 4]
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
 
 class TestMessageItem(object):
-    RESOURCE_URL = "/api/messages/message-1/"
-    INVALID_URL = "/api/messages/non-existing-message/"
+    RESOURCE_URL = "/api/threads/thread-1/messages/message-1/"
+    INVALID_URL = "/api/threads/thread-1/messages/non-existing-message/"
 
     def test_get(self, client):
         """
