@@ -218,12 +218,11 @@ class TestUserItem(object):
 
 
 class TestReactionCollection(object):
-    RESOURCE_URL = "/api/reactions/"
+    RESOURCE_URL = "/api/threads/thread-1/messages/message-1/reactions/"
+    INVALID_URL = "/api/threads/thread-1/messages/message-nonexistent/reactions/"
 
     def test_post(self, client):
         # Case 1
-        # Check that reaction does not exist yet
-
         reaction = _get_reaction(reaction_type=9, user_id=1, message_id=1)
         resp = client.post(self.RESOURCE_URL, json=reaction)
         assert resp.status_code == 201
@@ -248,10 +247,26 @@ class TestReactionCollection(object):
         resp = client.post(self.RESOURCE_URL, json=invalid_reaction)
         assert resp.status_code == 400
 
+    def test_get(self,client):
+        """
+        Tests get method for reaction collection.
+        Case 1: Get method collection -> 200
+        Case 2: Get non-existing method collection -> 404
+        """
+
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert json.loads(resp.data)["reaction_ids"] == [2]
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
 
 class TestReactionItem(object):
-    RESOURCE_URL = "/api/reactions/2/"
-    INVALID_URL = "/api/reactions/non-existing-reaction/"
+    RESOURCE_URL = "/api/threads/thread-1/messages/message-1/reactions/2/"
+    INVALID_URL = "/api/threads/thread-1/messages/message-1/reactions/non-existing-reaction/"
 
     def test_get(self, client):
         """

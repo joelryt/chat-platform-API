@@ -1,3 +1,4 @@
+import json
 from flask_restful import Resource
 from flask import Response, request
 from werkzeug.routing import BaseConverter
@@ -10,7 +11,7 @@ from src.app import db
 
 
 class ReactionCollection(Resource):
-    def post(self):
+    def post(self, message, thread):
         if not request.json:
             raise UnsupportedMediaType
         try:
@@ -36,22 +37,28 @@ class ReactionCollection(Resource):
             ) from exc
         from src.api import api
 
-        aaa = api.url_for(ReactionItem, reaction=reaction)
+        aaa = api.url_for(ReactionItem, reaction=reaction, message=message, thread=thread)
         return Response(headers={"Location": aaa}, status=201)
+    
+    def get(self, message, thread):
+        reactions = Reaction.query.filter_by(message=message).all()
+        reaction_collection = [reaction.reaction_id for reaction in reactions]
+        body = {"reaction_ids": reaction_collection}
+        return Response(json.dumps(body), status=200, mimetype="application/json")
 
 
 class ReactionItem(Resource):
-    def get(self, reaction):
+    def get(self, reaction, message, thread):
         response_data = reaction.serialize()
         response_data["reaction"] = str(reaction.reaction_id)
         return Response(headers=response_data, status=200)
 
-    def delete(self, reaction):
+    def delete(self, reaction, message, thread):
         db.session.delete(reaction)
         db.session.commit()
         return Response(status=204)
 
-    def put(self, reaction):
+    def put(self, reaction, message, thread):
         if not request.json:
             raise UnsupportedMediaType
         try:
