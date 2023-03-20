@@ -1,3 +1,4 @@
+import json
 from flask_restful import Resource
 from flask import Response, request
 from werkzeug.routing import BaseConverter
@@ -30,6 +31,19 @@ class ThreadCollection(Resource):
 
         uri = api.url_for(ThreadItem, thread=thread)
         return Response(headers={"Location": uri}, status=201)
+
+    def get(self):
+        """
+        GET method for thread collection.
+        Fetches all thread objects from database.
+        :return:
+            Returns a response with a list of thread_id attributes of all threads
+            in the response body and status 200.
+        """
+        threads = Thread.query.all()
+        thread_collection = [thread.id for thread in threads]
+        body = {"thread_ids": thread_collection}
+        return Response(json.dumps(body), status=200, mimetype="application/json")
 
 
 class ThreadItem(Resource):

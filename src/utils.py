@@ -101,6 +101,12 @@ def sample_database():
 # Modified from Exercise 2 Validating Keys example
 # https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/implementing-rest-apis-with-flask/#validating-keys
 def require_authentication(func):
+    """
+    Authentication decorator for resource methods.
+    Checks that the request headers contain correct API key related
+    to the user object that is being accessed.
+    """
+
     def wrapper(self, user, *args, **kwargs):
         try:
             token = request.headers["Api-key"].strip()

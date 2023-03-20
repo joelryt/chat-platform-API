@@ -11,8 +11,13 @@ api = Api(api_bp)
 
 api.add_resource(UserItem, "/users/<user:user>/")
 api.add_resource(UserCollection, "/users/")
-api.add_resource(ReactionItem, "/threads/<thread:thread>/messages/<message:message>/reactions/<reaction:reaction>/")
-api.add_resource(ReactionCollection, "/threads/<thread:thread>/messages/<message:message>/reactions/")
+api.add_resource(
+    ReactionItem,
+    "/threads/<thread:thread>/messages/<message:message>/reactions/<reaction:reaction>/",
+)
+api.add_resource(
+    ReactionCollection, "/threads/<thread:thread>/messages/<message:message>/reactions/"
+)
 api.add_resource(ThreadCollection, "/threads/")
 api.add_resource(ThreadItem, "/threads/<thread:thread>/")
 api.add_resource(MessageCollection, "/threads/<thread:thread>/messages/")

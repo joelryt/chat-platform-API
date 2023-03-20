@@ -37,9 +37,11 @@ class ReactionCollection(Resource):
             ) from exc
         from src.api import api
 
-        aaa = api.url_for(ReactionItem, reaction=reaction, message=message, thread=thread)
+        aaa = api.url_for(
+            ReactionItem, reaction=reaction, message=message, thread=thread
+        )
         return Response(headers={"Location": aaa}, status=201)
-    
+
     def get(self, message, thread):
         reactions = Reaction.query.filter_by(message=message).all()
         reaction_collection = [reaction.reaction_id for reaction in reactions]

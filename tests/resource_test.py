@@ -247,11 +247,11 @@ class TestReactionCollection(object):
         resp = client.post(self.RESOURCE_URL, json=invalid_reaction)
         assert resp.status_code == 400
 
-    def test_get(self,client):
+    def test_get(self, client):
         """
         Tests get method for reaction collection.
-        Case 1: Get method collection -> 200
-        Case 2: Get non-existing method collection -> 404
+        Case 1: Get reaction collection -> 200
+        Case 2: Get non-existing reaction collection -> 404
         """
 
         # Case 1
@@ -266,7 +266,9 @@ class TestReactionCollection(object):
 
 class TestReactionItem(object):
     RESOURCE_URL = "/api/threads/thread-1/messages/message-1/reactions/2/"
-    INVALID_URL = "/api/threads/thread-1/messages/message-1/reactions/non-existing-reaction/"
+    INVALID_URL = (
+        "/api/threads/thread-1/messages/message-1/reactions/non-existing-reaction/"
+    )
 
     def test_get(self, client):
         """
@@ -339,6 +341,7 @@ class TestReactionItem(object):
 
 class TestThreadCollection(object):
     RESOURCE_URL = "/api/threads/"
+    INVALID_URL = "/api/not-a-thread-collection/"
 
     def test_post(self, client):
         """
@@ -364,6 +367,21 @@ class TestThreadCollection(object):
         invalid_thread = _get_thread(title=None)
         resp = client.post(self.RESOURCE_URL, json=invalid_thread)
         assert resp.status_code == 400
+
+    def test_get(self, client):
+        """
+        Tests get method for thread collection.
+        Case 1: Get thread collection -> 200
+        Case 2: Get non-existing thread collection -> 404
+        """
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert json.loads(resp.data)["thread_ids"] == [1]
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
 
 
 class TestThreadItem(object):
@@ -469,8 +487,8 @@ class TestMessageCollection(object):
     def test_get(self, client):
         """
         Tests get method for message collection.
-        Case 1: Get method collection -> 200
-        Case 2: Get non-existing method collection -> 404
+        Case 1: Get message collection -> 200
+        Case 2: Get non-existing message collection -> 404
         """
         # Case 1
         resp = client.get(self.RESOURCE_URL)
