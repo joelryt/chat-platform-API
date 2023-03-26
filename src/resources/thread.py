@@ -11,7 +11,19 @@ from src.app import db
 
 
 class ThreadCollection(Resource):
+    """
+    Thread collection resource
+    """
     def post(self):
+        """
+        POST method for thread collection.
+        Creates a new thread with the request parameters and
+        adds it to the database.
+        :return:
+            On successful thread creation, returns a response with
+            the created thread's URI as a Location header,
+            and status 201.
+        """
         if not request.json:
             raise UnsupportedMediaType
 
@@ -47,10 +59,30 @@ class ThreadCollection(Resource):
 
 
 class ThreadItem(Resource):
+    """
+    Thread item resource
+    """
     def get(self, thread):
+    """
+        GET method for thread item.
+        Fetches the requested thread from the database.
+        :param thread:
+            The thread object that needs to be fetched from the database.
+        :return:
+            Returns a response with the fetched thread object's id and
+            thread attributes in the headers and status 200.
+     """
         return Response(headers=thread.serialize(), status=200)
 
     def put(self, thread):
+        """
+        PUT method for thread item.
+        Rewrites an already existing thread object's attributes.
+        :param thread:
+            The thread object which is affected.
+        :return:
+            On successful rewrite, returns a response with status 204.
+        """
         if not request.json:
             raise UnsupportedMediaType
 
@@ -67,13 +99,32 @@ class ThreadItem(Resource):
         return Response(status=204)
 
     def delete(self, thread):
+        """
+        DELETE method for thread item.
+        Deletes an existing thread object from the database.
+        :param thread:
+            The thread object of which message is deleted.
+        :return:
+            Returns a response with status 204.
+        """
         db.session.delete(thread)
         db.session.commit()
         return Response(status=204)
 
 
 class ThreadConverter(BaseConverter):
+    """
+    Converter for thread URL variable.
+    """
     def to_python(self, thread_id):
+        """
+        Converts the thread picked from URL to corresponding
+        database thread object.
+        :param thread_id:
+            ID of the thread object in the database.
+        :return:
+            Returns the thread object fetched from the database.
+        """
         id = thread_id.split("-")[-1]
         db_thread = Thread.query.filter_by(id=id).first()
         if db_thread is None:
@@ -81,4 +132,11 @@ class ThreadConverter(BaseConverter):
         return db_thread
 
     def to_url(self, db_thread):
+        """
+        Uses the thread object's id to create a URI for the object.
+        :param db_thread:
+            The thread object that the URI is created for.
+        :return:
+            Returns the thread object's id attribute as the URI.
+        """
         return f"thread-{db_thread.id}"
