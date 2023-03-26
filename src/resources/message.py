@@ -11,7 +11,19 @@ from src.app import db
 
 
 class MessageCollection(Resource):
+    """
+    Message collection resource
+    """
     def post(self, thread):
+        """
+        POST method for message collection.
+        Creates a new message with the request parameters and
+        adds it to the database.
+        :return:
+            On successful user creation, returns a response with
+            the created message's URI as a Location header,
+            and status 201.
+        """
         if not request.json:
             raise UnsupportedMediaType
 
@@ -55,10 +67,34 @@ class MessageCollection(Resource):
 
 
 class MessageItem(Resource):
+    """
+    Message item resource.
+    """
     def get(self, thread, message):
+         """
+        GET method for message item.
+        Fetches the requested message from the database.
+        :param message:
+            The message object that needs to be fetched from the database.
+        :param thread:
+            The thread object that needs to be fetched from the database.
+        :return:
+            Returns a response with the fetched message object's id and
+            message attributes in the headers and status 200.
+        """
         return Response(headers=message.serialize(), status=200)
 
     def put(self, thread, message):
+        """
+        PUT method for message item.
+        Rewrites an already existing message object's attributes.
+        :param message:
+            The message object which is rewritten.
+        :param thread:
+            The thread object which is affected.
+        :return:
+            On successful rewrite, returns a response with status 204.
+        """
         if not request.json:
             raise UnsupportedMediaType
 
@@ -79,13 +115,34 @@ class MessageItem(Resource):
         return Response(status=204)
 
     def delete(self, thread, message):
+        """
+        DELETE method for message item.
+        Deletes an existing message object from the database.
+        :param message:
+            The message object that is being deleted.
+        :param thread:
+            The thread object of which message is deleted.
+        :return:
+            Returns a response with status 204.
+        """
         db.session.delete(message)
         db.session.commit()
         return Response(status=204)
 
 
 class MessageConverter(BaseConverter):
+    """
+    Converter for message URL variable.
+    """
     def to_python(self, message_id):
+        """
+        Converts the message picked from URL to corresponding
+        database user object.
+        :param message_id:
+            ID of the message object in the database.
+        :return:
+            Returns the message object fetched from the database.
+        """
         id = message_id.split("-")[-1]
         db_message = Message.query.filter_by(message_id=id).first()
         if db_message is None:
@@ -93,4 +150,11 @@ class MessageConverter(BaseConverter):
         return db_message
 
     def to_url(self, db_message):
+        """
+        Uses the message object's id to create a URI for the object.
+        :param db_message:
+            The message object that the URI is created for.
+        :return:
+            Returns the message object's id attribute as the URI.
+        """
         return f"message-{db_message.message_id}"
