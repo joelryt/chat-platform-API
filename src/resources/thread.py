@@ -79,7 +79,7 @@ class ThreadItem(Resource):
         PUT method for thread item.
         Rewrites an already existing thread object's attributes.
         :param thread:
-            The thread object which is affected.
+            The thread object which is rewritten.
         :return:
             On successful rewrite, returns a response with status 204.
         """
@@ -103,7 +103,7 @@ class ThreadItem(Resource):
         DELETE method for thread item.
         Deletes an existing thread object from the database.
         :param thread:
-            The thread object of which message is deleted.
+            The thread object which is deleted.
         :return:
             Returns a response with status 204.
         """
