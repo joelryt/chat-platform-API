@@ -137,7 +137,7 @@ class MessageConverter(BaseConverter):
     def to_python(self, message_id):
         """
         Converts the message picked from URL to corresponding
-        database user object.
+        database message object.
         :param message_id:
             ID of the message object in the database.
         :return:
