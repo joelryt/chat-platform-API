@@ -20,7 +20,7 @@ class MessageCollection(Resource):
         Creates a new message with the request parameters and
         adds it to the database.
         :return:
-            On successful user creation, returns a response with
+            On successful message creation, returns a response with
             the created message's URI as a Location header,
             and status 201.
         """
