@@ -21,11 +21,57 @@ components:
         - username
         - password
       type: object
+    Thread:
+      properties:
+        title:
+          description: Thread title
+          maxLength: 200
+          type: string
+      required:
+        - title
+      type: object
+    Message:
+      properties:
+        message_content:
+          description: Message content
+          maxLength: 500
+          type: string
+        timestamp:
+          description: timestamp of the message
+          type: datetime
+        sender_id:
+          description: sender identification
+          type: integer
+        parent_id:
+          description: message parent identification
+          type: integer
+        thread_id:
+          description: thread identification
+          type: integer
+      required:
+        - message_content
+        - timestamp
+        - sender_id
+      type: object
   parameters:
     user:
       description: Selected user's unique username
       in: path
       name: user
+      required: true
+      schema:
+        type: string
+    thread:
+      description: Selected thread's unique identification
+      in: path
+      name: thread
+      required: true
+      schema:
+        type: string
+    message:
+      description: Selected message's unique identification
+      in: path
+      name: thread
       required: true
       schema:
         type: string
@@ -120,3 +166,113 @@ paths:
           $ref: '#/components/responses/Unauthorized'
       security:
         - Api-key: []
+  /threads/:
+    post:
+      description: Create a new thread
+      requestBody:
+        description: JSON document that contains required information for creating a thread
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Thread'
+            example:
+              tittle: new-thread
+      responses:
+        '201':
+          description: Thread created successfully
+          headers:
+            Location:
+              description: URI of the created thread
+              schema:
+                type: string
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Thread already exists
+  /threads/{thread}/:
+    parameters:
+      - $ref: '#/components/parameters/thread'
+    get:
+      description: Get thread objects from the database
+      responses:
+        '200':
+          description: Thread identification
+          content:
+            application/json:
+              example:
+                id: 1
+                title: thread
+        '404':
+          description: The thread was not found
+    put:
+      description: Update thread's information
+      requestBody:
+        description: JSON document that contains required information for thread
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/thread'
+            example:
+              title: thread1
+      responses:
+        '204':
+          description: Thread information updated successfully
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Thread already exists
+        '404':
+          description: The thread was not found
+    delete:
+      description: Delete existing thread
+      responses:
+        '204':
+          description: Thread deleted successfully
+        '404':
+          description: The thread was not found
+  /threads/{thread}/messages:
+    parameters:
+      - $ref: '#/components/parameters/message'
+    get:
+      description: Get message objects from the database
+      responses:
+        '200':
+          description: Message identification
+          content:
+            application/json:
+              example:
+                message_id: 1
+        '404':
+          description: The message was not found
+    put:
+      description: Update message's information
+      requestBody:
+        description: JSON document that contains required information for the message
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/message'
+            example:
+              title: thread1
+      responses:
+        '204':
+          description: Message information updated successfully
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Message already exists
+        '404':
+          description: The message was not found
+    delete:
+      description: Delete existing message
+      responses:
+        '204':
+          description: Message deleted successfully
+        '404':
+          description: The message was not found
