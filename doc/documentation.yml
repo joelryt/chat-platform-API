@@ -72,7 +72,7 @@ components:
     message:
       description: Selected message's unique identification
       in: path
-      name: thread
+      name: message
       required: true
       schema:
         type: string
@@ -178,16 +178,6 @@ paths:
               $ref: '#/components/schemas/Thread'
             example:
               tittle: new-thread
-      get:
-      description: Collect threads
-      requestBody:
-        description: JSON document that contains required information for collecting threads
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Thread'
-            example:
-              thread_ids: 1
       responses:
         '201':
           description: Thread created successfully
@@ -202,6 +192,18 @@ paths:
           description: Invalid request
         '409':
           description: Thread already exists
+    get:
+      description: Get id and title of a thread
+      responses:
+        '200':
+          description: ID and title of the thread
+          content:
+            application/json:
+              example:
+                thread_ids: 1
+                title: tittle
+        '404':
+          description: The thread was not found
   /threads/{thread}/:
     parameters:
       - $ref: '#/components/parameters/thread'
@@ -246,6 +248,9 @@ paths:
         '404':
           description: The thread was not found
   /threads/{thread}/messages:
+    parameters:
+      - $ref: '#/components/parameters/message'
+      - $ref: '#/components/parameters/thread'
     post:
       description: Create a new message
       requestBody:
@@ -257,22 +262,12 @@ paths:
             example:
               message: three-body-problem
               thread: 1
-      get:
-      description: Collect messages
-      requestBody:
-        description: JSON document that contains required information for collecting messages
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Message'
-            example:
-              message_ids: 1
       responses:
         '201':
-          description: Message created successfully
+          description: Thread created successfully
           headers:
             Location:
-              description: URI of the created message
+              description: URI of the created thread
               schema:
                 type: string
         '415':
@@ -281,9 +276,21 @@ paths:
           description: Invalid request
         '409':
           description: Thread already exists
-      
+    get:
+      description: Get message objects from the database
+      responses:
+        '200':
+          description: Message identification
+          content:
+            application/json:
+              example:
+                message_ids: 1
+        '404':
+          description: The message was not found
+
   /threads/{thread}/messages/{message}:
     parameters:
+      - $ref: '#/components/parameters/thread'
       - $ref: '#/components/parameters/message'
     get:
       description: Get message objects from the database
