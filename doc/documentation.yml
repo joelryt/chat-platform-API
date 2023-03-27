@@ -54,6 +54,22 @@ components:
         - timestamp
         - sender_id
       type: object
+    Reaction:
+      properties:
+        reaction_type:
+          description: Reaction type
+          type: integer
+        user_id:
+          description: User id of the reaction's author
+          type: integer
+        message_id:
+          description: The id of the message the reaction is attached to
+          type: integer
+      required:
+        - reaction_type
+        - user_id
+        - message_id
+      type: object
   parameters:
     user:
       description: Selected user's unique username
@@ -73,6 +89,13 @@ components:
       description: Selected message's unique identification
       in: path
       name: message
+      required: true
+      schema:
+        type: string
+    reaction:
+      description: Selected reaction's unique identification
+      in: path
+      name: reaction
       required: true
       schema:
         type: string
@@ -331,3 +354,94 @@ paths:
           description: Message deleted successfully
         '404':
           description: The message was not found
+
+  /threads/{thread}/messages/{message}/reactions:
+    parameters:
+      - $ref: '#/components/parameters/message'
+      - $ref: '#/components/parameters/thread'
+    post:
+      description: Create a new reaction
+      requestBody:
+        description: JSON document that contains required information for creating a reaction
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reaction'
+            example:
+              reaction_type: 1
+              user_id: 1
+              message_id: 1
+      responses:
+        '201':
+          description: Reaction created successfully
+          headers:
+            Location:
+              description: URI of the created reaction
+              schema:
+                type: string
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Reaction already exists
+    get:
+      description: Get reactions to a message
+      responses:
+        '200':
+          description: Ids of the reactions to a message
+          content:
+            application/json:
+              example:
+              - reaction_ids: [1]
+        '404':
+          description: Reaction not found
+  /threads/{thread}/messages/{message}/reactions/{reaction}:
+    parameters:
+      - $ref: '#/components/parameters/thread'
+      - $ref: '#/components/parameters/message'
+      - $ref: '#/components/parameters/reaction'
+    get:
+      description: Get a reaction
+      responses:
+        '200':
+          description: Reaction data
+          content:
+            application/json:
+              example:
+                reaction_id: 1
+                reaction_type: 1
+                user_id: 1
+                message_id: 1
+        '404':
+          description: The reaction was not found
+    put:
+      description: Update a reaction's data
+      requestBody:
+        description: JSON document that contains required information for reaction
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reaction'
+            example:
+              reaction_type: 1
+              user_id: 1
+              message_id: 1
+      responses:
+        '204':
+          description: Reaction data updated successfully
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Reaction already exists
+        '404':
+          description: The reaction was not found
+    delete:
+      description: Delete a reaction
+      responses:
+        '204':
+          description: Reaction deleted successfully
+        '404':
+          description: The reaction was not found
