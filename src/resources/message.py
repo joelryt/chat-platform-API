@@ -14,6 +14,7 @@ class MessageCollection(Resource):
     """
     Message collection resource
     """
+
     def post(self, thread):
         """
         POST method for message collection.
@@ -70,8 +71,9 @@ class MessageItem(Resource):
     """
     Message item resource.
     """
+
     def get(self, thread, message):
-         """
+        """
         GET method for message item.
         Fetches the requested message from the database.
         :param message:
@@ -134,6 +136,7 @@ class MessageConverter(BaseConverter):
     """
     Converter for message URL variable.
     """
+
     def to_python(self, message_id):
         """
         Converts the message picked from URL to corresponding

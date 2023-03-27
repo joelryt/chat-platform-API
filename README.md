@@ -33,6 +33,9 @@ Deploy the API locally:
 flask --app src\app run
 ```
 
+# API Documentation
+Api documentation can be found from path <code>/apidocs/</code> when the app is running.
+
 # Running the tests
 Running the tests require pytest package. Install pytest package using pip:
 ```

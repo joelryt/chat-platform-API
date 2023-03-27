@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flasgger import Swagger
 
 db = SQLAlchemy()
 
@@ -14,6 +15,13 @@ def create_app(test_config=None):
         + os.path.join(app.instance_path, "development.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
+    app.config["SWAGGER"] = {
+        "title": "Chat Platform API",
+        "openapi": "3.0.3",
+        "uiverion": 3,
+    }
+
+    swagger = Swagger(app, template_file="../doc/documentation.yml")
 
     if test_config is None:
         # load the instance config, if it exists, when not testing

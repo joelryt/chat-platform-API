@@ -14,5 +14,6 @@ setup(
         "jsonschema",
         "rfc3339-validator",
         "pytz",
+        "flasgger"
     ],
 )

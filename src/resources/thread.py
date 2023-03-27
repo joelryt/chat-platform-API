@@ -14,6 +14,7 @@ class ThreadCollection(Resource):
     """
     Thread collection resource
     """
+
     def post(self):
         """
         POST method for thread collection.
@@ -62,8 +63,9 @@ class ThreadItem(Resource):
     """
     Thread item resource
     """
+
     def get(self, thread):
-    """
+        """
         GET method for thread item.
         Fetches the requested thread from the database.
         :param thread:
@@ -71,7 +73,7 @@ class ThreadItem(Resource):
         :return:
             Returns a response with the fetched thread object's id and
             thread attributes in the headers and status 200.
-     """
+        """
         return Response(headers=thread.serialize(), status=200)
 
     def put(self, thread):
@@ -116,6 +118,7 @@ class ThreadConverter(BaseConverter):
     """
     Converter for thread URL variable.
     """
+
     def to_python(self, thread_id):
         """
         Converts the thread picked from URL to corresponding
