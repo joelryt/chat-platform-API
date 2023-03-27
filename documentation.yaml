@@ -38,7 +38,8 @@ components:
           type: string
         timestamp:
           description: timestamp of the message
-          type: datetime
+          type: string
+          format: date-time
         sender_id:
           description: sender identification
           type: integer
@@ -213,7 +214,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/thread'
+              $ref: '#/components/schemas/Thread'
             example:
               title: thread1
       responses:
@@ -255,7 +256,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/message'
+              $ref: '#/components/schemas/Message'
             example:
               title: thread1
       responses:
