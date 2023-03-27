@@ -572,8 +572,8 @@ class TestMessageItem(object):
 
 
 class TestMediaCollection(object):
-    RESOURCE_URL = "/api/media/"
-    INVALID_URL = "/api/mediaaaaaaaaa/"
+    RESOURCE_URL = "/api/threads/thread-1/messages/message-4/media/"
+    INVALID_URL = "/api/threads/thread-1/messages/message-4/mediaaaaaaaaa/"
 
     """
     Case1: Valid Post -> 201
@@ -605,7 +605,7 @@ class TestMediaCollection(object):
 
         # Case4
         media = _get_media(media_url=test_picture, message_id=4)
-        resp = client.get(self.RESOURCE_URL, json=media)
+        resp = client.put(self.RESOURCE_URL, json=media)
         assert resp.status_code == 405
 
         # Case5
@@ -632,10 +632,26 @@ class TestMediaCollection(object):
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 409
 
+    def test_get(self,client):
+        """
+        Tests get method for media collection.
+        Case 1: Get method collection -> 200
+        Case 2: Get non-existing method collection -> 404
+        """
+
+        # Case 1
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        assert json.loads(resp.data)["media_ids"] == [3]
+
+        # Case 2
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
 
 class TestMediaItem(object):
-    VALID_URL = "/api/media/3/"
-    INVALID_URL = "/api/media/23456/"
+    VALID_URL = "/api/threads/thread-1/messages/message-4/media/3/"
+    INVALID_URL = "/api/threads/thread-1/messages/message-4/media/23456/"
 
     def test_get(self, client):
         """

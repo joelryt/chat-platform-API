@@ -70,6 +70,20 @@ components:
         - user_id
         - message_id
       type: object
+    Media:
+      properties:
+        media_url:
+          description: Web URL to an image file
+          maxLength: 128
+          type: string
+          format: uri
+          pattern: (.png|.jpg)$
+        message_id:
+          description: ID of the message that the media is sent with
+          type: integer
+      required:
+        - media_url
+        - message_id
   parameters:
     user:
       description: Selected user's unique username
@@ -96,6 +110,13 @@ components:
       description: Selected reaction's unique identification
       in: path
       name: reaction
+      required: true
+      schema:
+        type: string
+    media:
+      description: Selected media's unique identification
+      in: path
+      name: media
       required: true
       schema:
         type: string
@@ -445,3 +466,92 @@ paths:
           description: Reaction deleted successfully
         '404':
           description: The reaction was not found
+  /threads/{thread}/messages/{message}/media/:
+    parameters:
+      - $ref: '#/components/parameters/message'
+      - $ref: '#/components/parameters/thread'
+    post:
+      description: Create new media
+      requestBody:
+        description: JSON document that contains required information for creating media
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Media'
+            example:
+              media_id: 1
+              media_url: https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png
+              message_id: 1
+      responses:
+        '201':
+          description: Media created successfully
+          headers:
+            Location:
+              description: URI of created media
+              schema:
+                type: string
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Media already exists
+    get:
+      description: Get media of a message
+      responses:
+        '200':
+          description: media_ids of the message
+          content:
+            application/json:
+              example:
+              - media_ids: [1]
+        '404':
+          description: Media not found
+  /threads/{thread}/messages/{message}/media/{media}:
+    parameters:
+      - $ref: '#/components/parameters/message'
+      - $ref: '#/components/parameters/thread'
+      - $ref: '#/components/parameters/media'
+    get:
+      description: Get a media item
+      responses:
+        '200':
+          description: Media data
+          content:
+            application/json:
+              example:
+                media_id: 1
+                media_url: https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png
+                message_id: 1
+        '404':
+          description: Media not found
+    put:
+      description: Edit media data
+      requestBody:
+        description: JSON document that contains required information for media
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Media'
+            example:
+              media_id: 1
+              media_url: https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png
+              message_id: 1
+      responses:
+        '204':
+          description: Media data updated successfully
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Media already exists
+        '404':
+          description: Media not found
+    delete:
+      description: Delete media
+      responses:
+        '204':
+          description: Media deleted successfully
+        '404':
+          description: Media not found
