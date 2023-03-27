@@ -178,6 +178,16 @@ paths:
               $ref: '#/components/schemas/Thread'
             example:
               tittle: new-thread
+      get:
+      description: Collect threads
+      requestBody:
+        description: JSON document that contains required information for collecting threads
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Thread'
+            example:
+              thread_ids: 1
       responses:
         '201':
           description: Thread created successfully
@@ -236,6 +246,43 @@ paths:
         '404':
           description: The thread was not found
   /threads/{thread}/messages:
+    post:
+      description: Create a new message
+      requestBody:
+        description: JSON document that contains required information for creating a message
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+            example:
+              message: three-body-problem
+              thread: 1
+      get:
+      description: Collect messages
+      requestBody:
+        description: JSON document that contains required information for collecting messages
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+            example:
+              message_ids: 1
+      responses:
+        '201':
+          description: Message created successfully
+          headers:
+            Location:
+              description: URI of the created message
+              schema:
+                type: string
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Thread already exists
+      
+  /threads/{thread}/messages/{message}:
     parameters:
       - $ref: '#/components/parameters/message'
     get:
