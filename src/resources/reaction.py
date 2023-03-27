@@ -52,7 +52,6 @@ class ReactionCollection(Resource):
 class ReactionItem(Resource):
     def get(self, reaction, message, thread):
         response_data = reaction.serialize()
-        response_data["reaction"] = str(reaction.reaction_id)
         return Response(headers=response_data, status=200)
 
     def delete(self, reaction, message, thread):

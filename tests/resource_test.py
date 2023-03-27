@@ -279,7 +279,7 @@ class TestReactionItem(object):
         # Case 1
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
-        assert resp.headers["reaction"] == self.RESOURCE_URL.split("/")[-2]
+        assert resp.headers["reaction_id"] == self.RESOURCE_URL.split("/")[-2]
 
         # Case 2
         resp = client.get(self.INVALID_URL)
