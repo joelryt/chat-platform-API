@@ -1,0 +1,333 @@
+---
+openapi: 3.0.3
+servers:
+  - url: /api
+info:
+  title: Chat platform API
+  version: 0.1.0
+components:
+  schemas:
+    User:
+      properties:
+        password:
+          description: Password for the user
+          maxLength: 32
+          type: string
+        username:
+          description: Unique username for the user
+          maxLength: 16
+          type: string
+      required:
+        - username
+        - password
+      type: object
+    Thread:
+      properties:
+        title:
+          description: Thread title
+          maxLength: 200
+          type: string
+      required:
+        - title
+      type: object
+    Message:
+      properties:
+        message_content:
+          description: Message content
+          maxLength: 500
+          type: string
+        timestamp:
+          description: timestamp of the message
+          type: string
+          format: date-time
+        sender_id:
+          description: sender identification
+          type: integer
+        parent_id:
+          description: message parent identification
+          type: integer
+        thread_id:
+          description: thread identification
+          type: integer
+      required:
+        - message_content
+        - timestamp
+        - sender_id
+      type: object
+  parameters:
+    user:
+      description: Selected user's unique username
+      in: path
+      name: user
+      required: true
+      schema:
+        type: string
+    thread:
+      description: Selected thread's unique identification
+      in: path
+      name: thread
+      required: true
+      schema:
+        type: string
+    message:
+      description: Selected message's unique identification
+      in: path
+      name: thread
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    Api-key:
+      type: apiKey
+      name: Api-key
+      in: header
+  responses:
+    Unauthorized:
+      description: Missing API key or provided API key is invalid
+paths:
+  /users/:
+    post:
+      description: Create a new user
+      requestBody:
+        description: JSON document that contains required information for creating a user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: new-username
+              password: new-password
+      responses:
+        '201':
+          description: User created successfully
+          headers:
+            Location:
+              description: URI of the created user
+              schema:
+                type: string
+            Api-key:
+              description: API key for the user
+              schema:
+                type: string
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Username already exists
+  /users/{user}/:
+    parameters:
+      - $ref: '#/components/parameters/user'
+    get:
+      description: Get id and username of a user
+      responses:
+        '200':
+          description: Id and username of the user
+          content:
+            application/json:
+              example:
+                user_id: 1
+                username: username
+        '404':
+          description: The user was not found
+    put:
+      description: Update user's information
+      requestBody:
+        description: JSON document that contains required information for user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: username
+              password: password
+      responses:
+        '204':
+          description: User information updated successfully
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Username already exists
+        '404':
+          description: The user was not found
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - Api-key: []
+    delete:
+      description: Delete existing user
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          description: The user was not found
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - Api-key: []
+  /threads/:
+    post:
+      description: Create a new thread
+      requestBody:
+        description: JSON document that contains required information for creating a thread
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Thread'
+            example:
+              tittle: new-thread
+      responses:
+        '201':
+          description: Thread created successfully
+          headers:
+            Location:
+              description: URI of the created thread
+              schema:
+                type: string
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Thread already exists
+    get:
+      description: Get id and title of a thread
+      responses:
+        '200':
+          description: ID and title of the thread
+          content:
+            application/json:
+              example:
+                thread_ids: 1
+                title: tittle
+        '404':
+          description: The thread was not found
+  /threads/{thread}/:
+    parameters:
+      - $ref: '#/components/parameters/thread'
+    get:
+      description: Get thread objects from the database
+      responses:
+        '200':
+          description: Thread identification
+          content:
+            application/json:
+              example:
+                id: 1
+                title: thread
+        '404':
+          description: The thread was not found
+    put:
+      description: Update thread's information
+      requestBody:
+        description: JSON document that contains required information for thread
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Thread'
+            example:
+              title: thread1
+      responses:
+        '204':
+          description: Thread information updated successfully
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Thread already exists
+        '404':
+          description: The thread was not found
+    delete:
+      description: Delete existing thread
+      responses:
+        '204':
+          description: Thread deleted successfully
+        '404':
+          description: The thread was not found
+  /threads/{thread}/messages:
+    parameters:
+      - $ref: '#/components/parameters/message'
+      - $ref: '#/components/parameters/thread'
+    post:
+      description: Create a new message
+      requestBody:
+        description: JSON document that contains required information for creating a message
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+            example:
+              message: three-body-problem
+              thread: 1
+      responses:
+        '201':
+          description: Thread created successfully
+          headers:
+            Location:
+              description: URI of the created thread
+              schema:
+                type: string
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Thread already exists
+    get:
+      description: Get message objects from the database
+      responses:
+        '200':
+          description: Message identification
+          content:
+            application/json:
+              example:
+                message_ids: 1
+        '404':
+          description: The message was not found
+      
+  /threads/{thread}/messages/{message}:
+    parameters:
+      - $ref: '#/components/parameters/thread'
+      - $ref: '#/components/parameters/message'
+    get:
+      description: Get message objects from the database
+      responses:
+        '200':
+          description: Message identification
+          content:
+            application/json:
+              example:
+                message_id: 1
+        '404':
+          description: The message was not found
+    put:
+      description: Update message's information
+      requestBody:
+        description: JSON document that contains required information for the message
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+            example:
+              title: thread1
+      responses:
+        '204':
+          description: Message information updated successfully
+        '415':
+          description: Request content type must be JSON
+        '400':
+          description: Invalid request
+        '409':
+          description: Message already exists
+        '404':
+          description: The message was not found
+    delete:
+      description: Delete existing message
+      responses:
+        '204':
+          description: Message deleted successfully
+        '404':
+          description: The message was not found
