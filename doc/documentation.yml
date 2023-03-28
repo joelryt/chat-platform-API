@@ -221,7 +221,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Thread'
             example:
-              tittle: new-thread
+              title: new-thread
       responses:
         '201':
           description: Thread created successfully
@@ -244,8 +244,7 @@ paths:
           content:
             application/json:
               example:
-                thread_ids: 1
-                title: tittle
+                thread_ids: [1]
         '404':
           description: The thread was not found
   /threads/{thread}/:
@@ -328,7 +327,7 @@ paths:
           content:
             application/json:
               example:
-                message_ids: 1
+                message_ids: [1]
         '404':
           description: The message was not found
 
