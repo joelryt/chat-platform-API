@@ -14,6 +14,7 @@ class ReactionCollection(Resource):
     """
     Reaction collection resource.
     """
+
     def post(self, message, thread):
         """
         POST method for reaction collection.
@@ -149,6 +150,7 @@ class ReactionConverter(BaseConverter):
     """
     Converter for reaction URL variable.
     """
+
     def to_python(self, reaction_id):
         """
         Converts the reaction picked from URL to corresponding

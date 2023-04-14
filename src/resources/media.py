@@ -14,6 +14,7 @@ class MediaCollection(Resource):
     """
     Media collection resource
     """
+
     def post(self, message, thread):
         """
         POST method for media collection.
@@ -46,7 +47,7 @@ class MediaCollection(Resource):
 
         uri = api.url_for(MediaItem, media=media, message=message, thread=thread)
         return Response(headers={"Location": uri}, status=201)
-    
+
     def get(self, message, thread):
         """
         GET method for media collection.
@@ -65,11 +66,11 @@ class MediaCollection(Resource):
         return Response(json.dumps(body), status=200, mimetype="application/json")
 
 
-
 class MediaItem(Resource):
     """
     Media item resource
     """
+
     def get(self, media, message, thread):
         """
         GET method for media items
@@ -138,6 +139,7 @@ class MediaConverter(BaseConverter):
     """
     Converter for Media resources
     """
+
     def to_python(self, media_id):
         """
         Converts the media picked from URL to corresponding
