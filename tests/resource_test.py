@@ -377,7 +377,7 @@ class TestThreadCollection(object):
         # Case 1
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
-        assert json.loads(resp.data)["thread_ids"] == [1]
+        assert json.loads(resp.data)["thread_ids"] == [1, 2, 3]
 
         # Case 2
         resp = client.get(self.INVALID_URL)
@@ -397,7 +397,7 @@ class TestThreadItem(object):
         # Case 1
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
-        assert resp.headers["title"] == "Thread title"
+        assert resp.headers["title"] == "Thread title 1"
 
         # Case 2
         resp = client.get(self.INVALID_URL)
@@ -457,7 +457,7 @@ class TestThreadItem(object):
 
 class TestMessageCollection(object):
     RESOURCE_URL = "/api/threads/thread-1/messages/"
-    INVALID_URL = "/api/threads/thread-2/messages/"
+    INVALID_URL = "/api/threads/thread-4/messages/"
 
     def test_post(self, client):
         """
@@ -470,7 +470,7 @@ class TestMessageCollection(object):
         # Case 1
         resp = client.post(self.RESOURCE_URL, json=message)
         assert resp.status_code == 201
-        assert re.match(f"{self.RESOURCE_URL}message-\\d/", resp.headers["Location"])
+        assert re.match(f"{self.RESOURCE_URL}message-\\d+/", resp.headers["Location"])
         # Check that user exists after posting it
         resp = client.get(resp.headers["Location"])
         assert resp.status_code == 200
@@ -632,7 +632,7 @@ class TestMediaCollection(object):
         resp = client.post(self.RESOURCE_URL, json=media)
         assert resp.status_code == 409
 
-    def test_get(self,client):
+    def test_get(self, client):
         """
         Tests get method for media collection.
         Case 1: Get method collection -> 200

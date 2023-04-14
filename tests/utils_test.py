@@ -28,8 +28,8 @@ def test_sample_database(app):
     """
     with app.app_context():
         sample_database()
-        assert Thread.query.count() == 1
-        assert Message.query.count() == 4
+        assert Thread.query.count() == 3
+        assert Message.query.count() == 11
         assert User.query.count() == 3
-        assert Reaction.query.count() == 3
-        assert Media.query.count() == 3
+        assert Reaction.query.count() == 9
+        assert Media.query.count() == 5
