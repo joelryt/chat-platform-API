@@ -258,7 +258,7 @@ paths:
           content:
             application/json:
               example:
-                id: 1
+                thread_id: 1
                 title: thread
         '404':
           description: The thread was not found
@@ -344,6 +344,11 @@ paths:
             application/json:
               example:
                 message_id: 1
+                message_content: Message content
+                timestamp: 2023-01-01T00:00:00.000000
+                sender_id: 1
+                thread_ID: 1
+                parent_ID: None
         '404':
           description: The message was not found
     put:
