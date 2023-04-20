@@ -41,14 +41,15 @@ API documentation and implementation were discussed. Main points from the docume
 
 
 ## Meeting 4.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 20.4.2023
+* **ASSISTANTS:** Ivan
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+API documentation (.yml file) and hypermedia plan were discussed. Hypermedia is not implemented for the API, so the hypermedia implementation part was skipped.
 
 ### Action points
-*List here the actions points discussed with assistants*
+- Add additional examples for resources with non-mandnatory fields. There should also be examples where non-mandatory fields are missing.
+- Explain some of the custom link relations for the hypermedia plan diagram where the relations are not fully clear.
 
 
 
