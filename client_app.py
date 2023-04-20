@@ -1,6 +1,6 @@
 import re
 import requests
-
+from operator import itemgetter
 
 def show_all_threads(session):
     """
@@ -54,8 +54,53 @@ def show_all_threads(session):
     return resp, "thread view"
 
 
+def print_message(message):
+    id, content, sender, timestamp, parent = itemgetter("id", "content", "sender", "timestamp", "parent")(message)
+    print(f"M_id: {id} Sent by: {sender} at {timestamp} as a reply to {parent}")
+    print(content)
+    print("")
+
+def sort_messages(messages):
+    """
+    TODO: Add actual sorting to put the messages in both a chronological and reply-based order.
+    Alternatively, find another solution.
+    """
+    for message in messages:
+        print_message(message)
+    return sorted
+
 def show_thread_view(session, resp):
-    pass
+    """
+    Prints a list of the messages in a thread.
+    """
+    threads_collection_url = "/api/threads/"
+    messages_collection_url = "/messages/"
+    thread_title = resp.headers["title"]
+    thread_id = resp.headers["thread_id"]
+    print(f"Thread Title: {thread_title} Id: {thread_id}")
+
+    resp = session.get(SERVER_URL + threads_collection_url + f"thread-{thread_id}" + messages_collection_url)
+    body = resp.json()
+    message_ids = body["message_ids"]
+    messages = []
+    for message_id in message_ids:
+        resp = session.get(
+            SERVER_URL + threads_collection_url + f"thread-{thread_id}/" + messages_collection_url + f"message-{message_id}/"
+        )
+        message = {
+            "id": message_id,
+            "content": resp.headers["message_content"],
+            "sender": resp.headers["sender_id"],
+            "timestamp": resp.headers["timestamp"],
+            "parent": resp.headers["parent_id"]
+        }
+        messages.append(message)
+
+    sort_messages(messages)
+
+    resp = 0
+    state = "message actions"
+    return resp, state
 
 
 def show_message_actions(session):
