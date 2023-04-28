@@ -72,20 +72,22 @@ def sort_messages(messages):
 def show_thread_view(session, resp):
     """
     Prints a list of the messages in a thread.
+    Then asks the user for a message id as an input, and then returns
+    the message id as an integer for the next state to use.
     """
-    threads_collection_url = "/api/threads/"
-    messages_collection_url = "/messages/"
+    threads_coll_url = "/api/threads/"
+    messages_coll_url = "/messages/"
     thread_title = resp.headers["title"]
     thread_id = resp.headers["thread_id"]
     print(f"Thread Title: {thread_title} Id: {thread_id}")
 
-    resp = session.get(SERVER_URL + threads_collection_url + f"thread-{thread_id}" + messages_collection_url)
+    resp = session.get(SERVER_URL + threads_coll_url + f"thread-{thread_id}" + messages_coll_url)
     body = resp.json()
     message_ids = body["message_ids"]
     messages = []
     for message_id in message_ids:
         resp = session.get(
-            SERVER_URL + threads_collection_url + f"thread-{thread_id}/" + messages_collection_url + f"message-{message_id}/"
+            SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{message_id}/"
         )
         message = {
             "id": message_id,
@@ -98,8 +100,24 @@ def show_thread_view(session, resp):
 
     sort_messages(messages)
 
-    resp = 0
-    state = "message actions"
+    print("Select a message by typing a number. To go back, type 'back' or 'b'.")
+    while True:
+        user_input = input(">")
+        if user_input in ["back", "b"]:
+            resp = None
+            state = "all threads"
+            break
+        else:
+            try:
+                selected_id = int(user_input)
+                if selected_id in message_ids:
+                    resp = selected_id
+                    state = "message actions"
+                    break
+                else:
+                    raise ValueError
+            except ValueError:
+                print("Invalid input. Input needs to be the id of a message in this thread.")
     return resp, state
 
 
