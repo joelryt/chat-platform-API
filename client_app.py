@@ -1,6 +1,7 @@
 import re
 import requests
 from operator import itemgetter
+import datetime
 
 def show_all_threads(session):
     """
@@ -104,14 +105,16 @@ def show_thread_view(session, resp):
     while True:
         user_input = input(">")
         if user_input in ["back", "b"]:
-            resp = None
+            resp = resp
             state = "all threads"
             break
         else:
             try:
                 selected_id = int(user_input)
                 if selected_id in message_ids:
-                    resp = selected_id
+                    resp = session.get(
+                        SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{selected_id}/"
+                        )
                     state = "message actions"
                     break
                 else:
@@ -121,17 +124,100 @@ def show_thread_view(session, resp):
     return resp, state
 
 
-def show_message_actions(session):
-    pass
+def show_message_actions(session, resp):
+    print("Select an action for the selected message by typing: ")
+    print("[reply], for replying to the message")
+    print("[like], for liking the message")
+    print("[back], for previous window")
+    print("[delethe], for deleting the message")
+    while True:
+        user_input = input(">")
+        if user_input in ["back", "b"]:
+            resp = None
+            state = "thread view"
+            break
+        else:
+            try:
+                if user_input in ["reply","like","delethe"]:
+                    if user_input == "reply":
+                        state = "reply to message"
+                        resp = resp
+                        break
+                    elif user_input == "like":
+                        state = "like to message"
+                        resp = resp
+                        break
+                    elif user_input == "delethe":
+                        state = "delete message"
+                        resp = resp
+                        break
+            except ValueError:
+                print("!!!!!!INVALID INPUT!!!!!!!")
+                print("Select an action for the selected message by typing: ")
+                print("[reply], for replying to the message")
+                print("[like], for liking the message")
+                print("[back], for previous window")
+                print("[delethe], for deleting the message")
+                continue
+    return resp, state
 
 
-def reply_to_message(session):
-    pass
+def reply_to_message(session, resp):
+    parent_id = resp.headers['message_id']
+    thread_id = resp.headers["thread_id"]
+    new_id = str(int(parent_id) + 1)
+    threads_coll_url = "/api/threads/"
+    messages_coll_url = "messages/"
+    print("Please write your reply for message " + str(parent_id) + " or go back by writing [back]")
+    while True:
+        message_content = input(">")
+        if message_content in ["back", "b"]:
+            resp = None
+            state = "message actions"
+            break
+        #try:
+        if len(message_content) > 0:
+            message_item = {
+                'message_id':new_id,
+                'message_content':message_content,
+                'timestamp':datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+                'thread_id':thread_id,
+                'parent_id':parent_id,
+                }
+            session.headers.update(message_item)
+            url = SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{new_id}/"
+            response = session.post(url, verify=False)
+            print(response)
+            resp=None
+            state="give username"
+            break
+        else:
+            print("Message is not written")
+            continue
+        #except ValueError:
+        #    print("oh noes, its broki")
+        #    continue
+    return resp, state
+        
+    
+    
 
 
-def give_username(session):
-    pass
-
+def give_username(session,resp):
+    while True:
+        print("Please, insert your username")
+        username = input(">")
+        if len(username) > 16:
+            print("Username can not be longer than 16 letters!")
+            continue
+        if type(username) is not str:
+            print("Username must be a string of characters!")
+            continue
+        else:
+            print("Posting with username" + username)
+            state = "all threads"
+            return username, resp, state
+ 
 
 def main(session):
     state = "all threads"
@@ -141,11 +227,11 @@ def main(session):
         elif state == "thread view":
             resp, state = show_thread_view(session, resp)
         elif state == "message actions":
-            resp, state = show_message_actions(session)
+            resp, state = show_message_actions(session, resp)
         elif state == "reply to message":
-            resp, state = reply_to_message(session)
+            resp, state = reply_to_message(session, resp)
         elif state == "give username":
-            resp, state = give_username(session)
+            username, resp, state = give_username(session,resp)
 
 
 if __name__ == "__main__":
