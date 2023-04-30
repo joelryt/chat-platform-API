@@ -197,18 +197,22 @@ def reply_to_message(session, resp):
     return resp, state
 
 def give_like(session,resp):
+    """
+    Likes the message and creates an username
+    """
     message_id = resp.headers['message_id']
     thread_id = resp.headers["thread_id"]
     threads_collection_url = "/api/threads/"
     thread = f"thread-{thread_id}"
     reaction = "/messages/" + f"message-{message_id}" + "/reactions/"
     react_url = SERVER_URL + threads_collection_url + thread + reaction
+    user_id = ask_username(session)
     data = {
             "reaction_type": int(1),
+            'user_id': int(user_id),
             "message_id": int(message_id),
         }
     response = session.post(react_url, json=data)
-    print(response)
     print('LIKED!')
     state = "all threads"
     return resp, state
