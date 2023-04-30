@@ -1,7 +1,9 @@
 import re
 import requests
 from operator import itemgetter
-import datetime
+from datetime import datetime
+import pytz
+import json
 
 def show_all_threads(session):
     """
@@ -129,7 +131,6 @@ def show_message_actions(session, resp):
     print("[reply], for replying to the message")
     print("[like], for liking the message")
     print("[back], for previous window")
-    print("[delethe], for deleting the message")
     while True:
         user_input = input(">")
         if user_input in ["back", "b"]:
@@ -147,17 +148,12 @@ def show_message_actions(session, resp):
                         state = "like to message"
                         resp = resp
                         break
-                    elif user_input == "delethe":
-                        state = "delete message"
-                        resp = resp
-                        break
             except ValueError:
                 print("!!!!!!INVALID INPUT!!!!!!!")
                 print("Select an action for the selected message by typing: ")
                 print("[reply], for replying to the message")
                 print("[like], for liking the message")
                 print("[back], for previous window")
-                print("[delethe], for deleting the message")
                 continue
     return resp, state
 
@@ -165,7 +161,8 @@ def show_message_actions(session, resp):
 def reply_to_message(session, resp):
     parent_id = resp.headers['message_id']
     thread_id = resp.headers["thread_id"]
-    new_id = str(int(parent_id) + 1)
+    print(thread_id)
+    #new_id = str(int(parent_id) + 1)
     threads_coll_url = "/api/threads/"
     messages_coll_url = "messages/"
     print("Please write your reply for message " + str(parent_id) + " or go back by writing [back]")
@@ -177,19 +174,21 @@ def reply_to_message(session, resp):
             break
         #try:
         if len(message_content) > 0:
+            user_id = ask_username(session)
+            print(user_id)
             message_item = {
-                'message_id':new_id,
                 'message_content':message_content,
-                'timestamp':datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
-                'thread_id':thread_id,
-                'parent_id':parent_id,
+                'timestamp':datetime.now(pytz.utc).isoformat(),
+                'sender_id': int(user_id),
+                'parent_id': int(parent_id),
                 }
-            session.headers.update(message_item)
-            url = SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{new_id}/"
-            response = session.post(url, verify=False)
+            #session.headers.update(message_item)
+            url = SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url
+            print("JSON: ", message_item)
+            response = session.post(url, json = message_item)
             print(response)
             resp=None
-            state="give username"
+            state="all threads"
             break
         else:
             print("Message is not written")
@@ -200,10 +199,8 @@ def reply_to_message(session, resp):
     return resp, state
         
     
-    
-
-
-def give_username(session,resp):
+def ask_username(session):
+    #Tilakone tilassa 'reply to message'
     while True:
         print("Please, insert your username")
         username = input(">")
@@ -214,10 +211,22 @@ def give_username(session,resp):
             print("Username must be a string of characters!")
             continue
         else:
-            print("Posting with username" + username)
-            state = "all threads"
-            return username, resp, state
- 
+            response = session.get(SERVER_URL + "/api/users/" + username + "/")
+            if response.status_code == 404:
+                url = SERVER_URL + "/api/users/"
+                stock_password = "password"
+                new_user = {
+                    'username': username,
+                    'password': stock_password
+                }
+                response = session.post(url, json = new_user)
+                print(response)
+                print("User " + username + " created")
+                response = session.get(SERVER_URL + "/api/users/" + username + "/")
+            user_id = response.headers["user_id"]
+            return user_id
+            
+
 
 def main(session):
     state = "all threads"
@@ -230,8 +239,6 @@ def main(session):
             resp, state = show_message_actions(session, resp)
         elif state == "reply to message":
             resp, state = reply_to_message(session, resp)
-        elif state == "give username":
-            username, resp, state = give_username(session,resp)
 
 
 if __name__ == "__main__":
