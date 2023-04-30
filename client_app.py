@@ -175,7 +175,6 @@ def reply_to_message(session, resp):
         #try:
         if len(message_content) > 0:
             user_id = ask_username(session)
-            print(user_id)
             message_item = {
                 'message_content':message_content,
                 'timestamp':datetime.now(pytz.utc).isoformat(),
@@ -184,7 +183,6 @@ def reply_to_message(session, resp):
                 }
             #session.headers.update(message_item)
             url = SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url
-            print("JSON: ", message_item)
             response = session.post(url, json = message_item)
             print(response)
             resp=None
@@ -197,7 +195,23 @@ def reply_to_message(session, resp):
         #    print("oh noes, its broki")
         #    continue
     return resp, state
-        
+
+def give_like(session,resp):
+    message_id = resp.headers['message_id']
+    thread_id = resp.headers["thread_id"]
+    threads_collection_url = "/api/threads/"
+    thread = f"thread-{thread_id}"
+    reaction = "/messages/" + f"message-{message_id}" + "/reactions/"
+    react_url = SERVER_URL + threads_collection_url + thread + reaction
+    data = {
+            "reaction_type": int(1),
+            "message_id": int(message_id),
+        }
+    response = session.post(react_url, json=data)
+    print(response)
+    print('LIKED!')
+    state = "all threads"
+    return resp, state
     
 def ask_username(session):
     #Tilakone tilassa 'reply to message'
@@ -237,6 +251,8 @@ def main(session):
             resp, state = show_thread_view(session, resp)
         elif state == "message actions":
             resp, state = show_message_actions(session, resp)
+        elif state == "like to message":
+            resp, state = give_like(session, resp)
         elif state == "reply to message":
             resp, state = reply_to_message(session, resp)
 
