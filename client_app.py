@@ -5,7 +5,6 @@ from datetime import datetime
 import pytz
 import json
 
-
 def show_all_threads(session):
     """
     Prints a list of all available threads.
