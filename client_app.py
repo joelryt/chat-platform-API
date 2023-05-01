@@ -3,7 +3,7 @@ import requests
 from operator import itemgetter
 from datetime import datetime
 import pytz
-import json
+
 
 def show_all_threads(session):
     """
@@ -63,9 +63,15 @@ def print_message(message):
     :param message: message that nees to be printed
     :return: printable string for the message
     """
-    id, content, timestamp, parent, reactions = itemgetter("id", "content", "timestamp", "parent", "reactions")(message)
+    id, content, timestamp, parent, reactions = itemgetter(
+        "id", "content", "timestamp", "parent", "reactions"
+    )(message)
     printed_message = f"Message: {id}, {timestamp}"
-    printed_message += f", reply to message {parent}, likes: {reactions}\n" if parent != 'None' else f", likes: {reactions}\n"
+    printed_message += (
+        f", reply to message {parent}, likes: {reactions}\n"
+        if parent != "None"
+        else f", likes: {reactions}\n"
+    )
     printed_message += content
     return printed_message
 
@@ -95,18 +101,28 @@ def show_thread_view(session, resp):
     thread_title = resp.headers["title"]
     thread_id = resp.headers["thread_id"]
 
-    resp = session.get(SERVER_URL + threads_coll_url + f"thread-{thread_id}" + messages_coll_url)
+    resp = session.get(
+        SERVER_URL + threads_coll_url + f"thread-{thread_id}" + messages_coll_url
+    )
     body = resp.json()
     message_ids = body["message_ids"]
     messages = []
     for message_id in message_ids:
         resp = session.get(
-            SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{message_id}/"
+            SERVER_URL
+            + threads_coll_url
+            + f"thread-{thread_id}/"
+            + messages_coll_url
+            + f"message-{message_id}/"
         )
         resp1 = session.get(
-            SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{message_id}/reactions/"
+            SERVER_URL
+            + threads_coll_url
+            + f"thread-{thread_id}/"
+            + messages_coll_url
+            + f"message-{message_id}/reactions/"
         )
-        reaction_amount = len(resp1.json()['reaction_ids'])
+        reaction_amount = len(resp1.json()["reaction_ids"])
         message = {
             "id": message_id,
             "content": resp.headers["message_content"],
@@ -131,14 +147,20 @@ def show_thread_view(session, resp):
                 selected_id = int(user_input)
                 if selected_id in message_ids:
                     resp = session.get(
-                        SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{selected_id}/"
-                        )
+                        SERVER_URL
+                        + threads_coll_url
+                        + f"thread-{thread_id}/"
+                        + messages_coll_url
+                        + f"message-{selected_id}/"
+                    )
                     state = "message actions"
                     break
                 else:
                     raise ValueError
             except ValueError:
-                print("Invalid input. Input needs to be the id of a message in this thread.")
+                print(
+                    "Invalid input. Input needs to be the id of a message in this thread."
+                )
     return resp, state
 
 
@@ -155,7 +177,7 @@ def show_message_actions(session, resp):
             break
         else:
             try:
-                if user_input in ["reply","like","delethe"]:
+                if user_input in ["reply", "like", "delethe"]:
                     if user_input == "reply":
                         state = "reply to message"
                         resp = resp
@@ -175,49 +197,52 @@ def show_message_actions(session, resp):
 
 
 def reply_to_message(session, resp):
-    parent_id = resp.headers['message_id']
+    parent_id = resp.headers["message_id"]
     thread_id = resp.headers["thread_id"]
     print(thread_id)
-    #new_id = str(int(parent_id) + 1)
     threads_coll_url = "/api/threads/"
     messages_coll_url = "messages/"
-    print("Please write your reply for message " + str(parent_id) + " or go back by writing [back]")
+    print(
+        "Please write your reply for message "
+        + str(parent_id)
+        + " or go back by writing [back]"
+    )
     while True:
         message_content = input(">")
         if message_content in ["back", "b"]:
             resp = None
             state = "message actions"
             break
-        #try:
         if len(message_content) > 0:
             user_id = ask_username(session)
             message_item = {
-                'message_content':message_content,
-                'timestamp':datetime.now(pytz.utc).isoformat(),
-                'sender_id': int(user_id),
-                'parent_id': int(parent_id),
-                }
-            #session.headers.update(message_item)
-            url = SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url
-            response = session.post(url, json = message_item)
-            #print(response)
+                "message_content": message_content,
+                "timestamp": datetime.now(pytz.utc).isoformat(),
+                "sender_id": int(user_id),
+                "parent_id": int(parent_id),
+            }
+            url = (
+                SERVER_URL
+                + threads_coll_url
+                + f"thread-{thread_id}/"
+                + messages_coll_url
+            )
+            response = session.post(url, json=message_item)
             print("MESSAGE POSTED!")
-            resp=None
-            state="all threads"
+            resp = None
+            state = "all threads"
             break
         else:
             print("Message is not written")
             continue
-        #except ValueError:
-        #    print("oh noes, its broki")
-        #    continue
     return resp, state
 
-def give_like(session,resp):
+
+def give_like(session, resp):
     """
     Likes the message and creates an username
     """
-    message_id = resp.headers['message_id']
+    message_id = resp.headers["message_id"]
     thread_id = resp.headers["thread_id"]
     threads_collection_url = "/api/threads/"
     thread = f"thread-{thread_id}"
@@ -225,14 +250,15 @@ def give_like(session,resp):
     react_url = SERVER_URL + threads_collection_url + thread + reaction
     user_id = ask_username(session)
     data = {
-            "reaction_type": int(1),
-            'user_id': int(user_id),
-            "message_id": int(message_id),
-        }
+        "reaction_type": int(1),
+        "user_id": int(user_id),
+        "message_id": int(message_id),
+    }
     response = session.post(react_url, json=data)
-    print('LIKED!')
+    print("LIKED!")
     state = "all threads"
     return resp, state
+
 
 def ask_username(session):
     while True:
@@ -249,17 +275,13 @@ def ask_username(session):
             if response.status_code == 404:
                 url = SERVER_URL + "/api/users/"
                 stock_password = "password"
-                new_user = {
-                    'username': username,
-                    'password': stock_password
-                }
-                response = session.post(url, json = new_user)
+                new_user = {"username": username, "password": stock_password}
+                response = session.post(url, json=new_user)
                 print(response)
                 print("User " + username + " created")
                 response = session.get(SERVER_URL + "/api/users/" + username + "/")
             user_id = response.headers["user_id"]
             return user_id
-            
 
 
 def main(session):
