@@ -58,9 +58,10 @@ def show_all_threads(session):
 
 
 def print_message(message):
-    id, content, sender, timestamp, parent = itemgetter("id", "content", "sender", "timestamp", "parent")(message)
+    id, content, sender, timestamp, parent, reactions = itemgetter("id", "content", "sender", "timestamp", "parent", "reactions")(message)
     print(f"M_id: {id} Sent by: {sender} at {timestamp} as a reply to {parent}")
     print(content)
+    print("Comment liked by " + reactions + " people")
     print("")
 
 def sort_messages(messages):
@@ -92,12 +93,17 @@ def show_thread_view(session, resp):
         resp = session.get(
             SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{message_id}/"
         )
+        resp1 = session.get(
+            SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url + f"message-{message_id}/reactions/"
+        )
+        reaction_amount = len(resp1.json()['reaction_ids'])
         message = {
             "id": message_id,
             "content": resp.headers["message_content"],
             "sender": resp.headers["sender_id"],
             "timestamp": resp.headers["timestamp"],
-            "parent": resp.headers["parent_id"]
+            "parent": resp.headers["parent_id"],
+            "reactions": str(reaction_amount),
         }
         messages.append(message)
 
@@ -184,7 +190,8 @@ def reply_to_message(session, resp):
             #session.headers.update(message_item)
             url = SERVER_URL + threads_coll_url + f"thread-{thread_id}/" + messages_coll_url
             response = session.post(url, json = message_item)
-            print(response)
+            #print(response)
+            print("MESSAGE POSTED!")
             resp=None
             state="all threads"
             break
@@ -218,7 +225,6 @@ def give_like(session,resp):
     return resp, state
     
 def ask_username(session):
-    #Tilakone tilassa 'reply to message'
     while True:
         print("Please, insert your username")
         username = input(">")
