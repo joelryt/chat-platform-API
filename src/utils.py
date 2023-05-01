@@ -89,7 +89,7 @@ def sample_database():
     media2 = Media(media_url="media2/url/")
     media2.message = message3
 
-    message4 = Message(message_content="Reply3", timestamp=datetime.datetime.now())
+    message4 = Message(message_content="Reply 3", timestamp=datetime.datetime.now())
     message4.user = user3
     message4.thread = thread1
     message4.parent = message1
