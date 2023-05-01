@@ -52,3 +52,9 @@ pip install pytest-cov
 ```
 pytest tests --cov
 ```
+
+# Client application
+You can try out the API functionality with this small client application.
+```
+python client_app.py
+```
