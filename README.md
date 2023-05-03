@@ -55,6 +55,8 @@ pytest tests --cov
 
 # Client application
 You can try out the API functionality with this small client application.
+Make sure that you have initialized and populated the database beforehand,
+so that there is something for the client to show.
 ```
 python client_app.py
 ```
