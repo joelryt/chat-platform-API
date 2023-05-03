@@ -178,6 +178,22 @@ def show_thread_view(session, thread):
 
 
 def show_message_actions(session, resp):
+    """
+        Function for possible user actions for a message.
+        Asks the user for possible input and changes state machine value according to the choice.
+        Input: Server connection session, Server response.
+        Output: State machine value, Server response.
+    """
+    message_id = resp.headers['message_id']
+    thread_id = resp.headers["thread_id"]
+    print("Selected message: ", resp.headers['message_content'])
+    threads_collection_url = "/api/threads/"
+    thread = f"thread-{thread_id}"
+    reaction = "/messages/" + f"message-{message_id}" + "/reactions/"
+    react_url = SERVER_URL + threads_collection_url + thread + reaction
+    response = session.get(react_url)
+    print("Selected message likes: ", len(response.json()['reaction_ids']))
+
     print("Select an action for the selected message by typing: ")
     print("[reply], for replying to the message")
     print("[like], for liking the message")
@@ -210,6 +226,11 @@ def show_message_actions(session, resp):
 
 
 def reply_to_message(session, resp):
+    """
+    Function for user reply to a message.
+    Input: Server connection session, Server response.
+    Output: State machine value, Server response.
+    """
     parent_id = resp.headers["message_id"]
     thread_id = resp.headers["thread_id"]
     threads_coll_url = "/api/threads/"
@@ -256,7 +277,10 @@ def reply_to_message(session, resp):
 
 def give_like(session, resp):
     """
-    Likes the message and creates a username
+    Likes the message and creates an username using ask_username function
+    Asks the user to write a message and changes state machine value when correct message is written and submitted.
+    Input: Server connection session, Server response.
+    Output: State machine value, Server response.
     """
     message_id = resp.headers["message_id"]
     thread_id = resp.headers["thread_id"]
@@ -282,6 +306,12 @@ def give_like(session, resp):
 
 
 def ask_username(session):
+    """
+    Function to generate username if one does not exists yet.
+    Will generate user ID in addition to the username.
+    Input: Server connection session.
+    Output: User ID value.
+    """
     while True:
         print("Please, insert your username")
         username = input(">")
@@ -304,6 +334,10 @@ def ask_username(session):
 
 
 def main(session):
+    """
+    State machine function
+    Input: Server connection session
+    """
     state = "all threads"
     while True:
         if state == "all threads":
