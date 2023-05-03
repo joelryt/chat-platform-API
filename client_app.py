@@ -90,7 +90,7 @@ def print_thread(thread_title, thread_id, messages):
     print(printed_thread)
 
 
-def show_thread_view(session, resp):
+def show_thread_view(session, thread):
     """
     Prints a list of the messages in a thread.
     Then asks the user for a message id as an input, and then returns
@@ -98,8 +98,8 @@ def show_thread_view(session, resp):
     """
     threads_coll_url = "/api/threads/"
     messages_coll_url = "/messages/"
-    thread_title = resp.headers["title"]
-    thread_id = resp.headers["thread_id"]
+    thread_title = thread.headers["title"]
+    thread_id = thread.headers["thread_id"]
 
     resp = session.get(
         SERVER_URL + threads_coll_url + f"thread-{thread_id}" + messages_coll_url
@@ -135,12 +135,27 @@ def show_thread_view(session, resp):
 
     print_thread(thread_title, thread_id, messages)
 
-    print("Select a message by typing a number. To go back, type 'back' or 'b'.")
+    print("Select a message by typing a number.")
+    print("Edit thread title by typing 'title yourtitlehere'.")
+    print(" To go back, type 'back' or 'b'.")
     while True:
         user_input = input(">")
         if user_input in ["back", "b"]:
             resp = resp
             state = "all threads"
+            break
+        elif user_input.startswith("title "):
+            new_title = user_input[6:]
+            thread_item = {"title": new_title}
+            resp = session.put(
+                SERVER_URL + threads_coll_url + f"thread-{thread_id}/", json=thread_item
+            )
+            if resp.status_code == 204:
+                print(f"Updated thread title to {new_title}")
+            else:
+                print(f"Failed to update thread title to {new_title}")
+            resp = session.get(SERVER_URL + threads_coll_url + f"thread-{thread_id}/")
+            state = "thread view"
             break
         else:
             try:
@@ -158,9 +173,7 @@ def show_thread_view(session, resp):
                 else:
                     raise ValueError
             except ValueError:
-                print(
-                    "Invalid input. Input needs to be the id of a message in this thread."
-                )
+                print("Invalid input.")
     return resp, state
 
 
