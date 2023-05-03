@@ -177,7 +177,7 @@ def show_message_actions(session, resp):
             break
         else:
             try:
-                if user_input in ["reply", "like", "delethe"]:
+                if user_input in ["reply", "like"]:
                     if user_input == "reply":
                         state = "reply to message"
                         resp = resp
@@ -199,7 +199,6 @@ def show_message_actions(session, resp):
 def reply_to_message(session, resp):
     parent_id = resp.headers["message_id"]
     thread_id = resp.headers["thread_id"]
-    print(thread_id)
     threads_coll_url = "/api/threads/"
     messages_coll_url = "messages/"
     print(
@@ -228,9 +227,13 @@ def reply_to_message(session, resp):
                 + messages_coll_url
             )
             response = session.post(url, json=message_item)
-            print("MESSAGE POSTED!")
-            resp = None
-            state = "all threads"
+            if response.status_code == 201:
+                print("MESSAGE POSTED!")
+            else:
+                print(f"Failed to post message. Response code: {response.status_code}")
+            url = SERVER_URL + threads_coll_url + f"thread-{thread_id}/"
+            resp = session.get(url)
+            state = "thread view"
             break
         else:
             print("Message is not written")
@@ -240,7 +243,7 @@ def reply_to_message(session, resp):
 
 def give_like(session, resp):
     """
-    Likes the message and creates an username
+    Likes the message and creates a username
     """
     message_id = resp.headers["message_id"]
     thread_id = resp.headers["thread_id"]
@@ -255,8 +258,13 @@ def give_like(session, resp):
         "message_id": int(message_id),
     }
     response = session.post(react_url, json=data)
-    print("LIKED!")
-    state = "all threads"
+    if response.status_code == 201:
+        print("LIKED!")
+    else:
+        print(f"Failed to like the message. Response code: {response.status_code}")
+    url = SERVER_URL + threads_collection_url + thread
+    resp = session.get(url)
+    state = "thread view"
     return resp, state
 
 
@@ -276,9 +284,7 @@ def ask_username(session):
                 url = SERVER_URL + "/api/users/"
                 stock_password = "password"
                 new_user = {"username": username, "password": stock_password}
-                response = session.post(url, json=new_user)
-                print(response)
-                print("User " + username + " created")
+                session.post(url, json=new_user)
                 response = session.get(SERVER_URL + "/api/users/" + username + "/")
             user_id = response.headers["user_id"]
             return user_id
