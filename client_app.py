@@ -92,9 +92,12 @@ def print_thread(thread_title, thread_id, messages):
 
 def show_thread_view(session, thread):
     """
-    Prints a list of the messages in a thread.
-    Then asks the user for a message id as an input, and then returns
-    the message id as an integer for the next state to use.
+    Gets thread message data, re-formats it to a dict and calls to print it.
+    Then asks the user for an input, which could be back, a message id to
+    modify or a new title for the thread. Then returns either refreshed thread data
+    or the message id as an integer for the next state to use, depending on the input.
+    :param session: requests session to be used in the requests
+    :param thread: The thread data to be used.
     """
     threads_coll_url = "/api/threads/"
     messages_coll_url = "/messages/"
