@@ -359,6 +359,7 @@ paths:
                     message_content: Message content
                     timestamp: 2023-01-01T00:00:00.000000
                     sender_id: 1
+                    thread_id: 1
                     parent_id: null
                 reply-message:
                   description: A message that is a reply to another message, has a parent ID
@@ -367,6 +368,7 @@ paths:
                     message_content: Message content
                     timestamp: 2023-01-01T00:00:00.000000
                     sender_id: 2
+                    thread_id: 1
                     parent_id: 1
         '404':
           description: The message was not found
