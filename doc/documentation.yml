@@ -46,14 +46,10 @@ components:
         parent_id:
           description: message parent identification
           type: integer
-        thread_id:
-          description: thread identification
-          type: integer
       required:
         - message_content
         - timestamp
         - sender_id
-        - thread_id
       type: object
     Reaction:
       properties:
@@ -293,7 +289,6 @@ paths:
           description: The thread was not found
   /threads/{thread}/messages:
     parameters:
-      - $ref: '#/components/parameters/message'
       - $ref: '#/components/parameters/thread'
     post:
       description: Create a new message
@@ -311,7 +306,6 @@ paths:
                   message_content: Message content
                   timestamp: 2023-01-01T00:00:00.000000
                   sender_id: 1
-                  thread_id: 1
               reply-message:
                 description: A message that is a reply to another message, has a parent ID
                 value:
@@ -319,7 +313,6 @@ paths:
                   message_content: Message content
                   timestamp: 2023-01-01T00:00:00.000000
                   sender_id: 2
-                  thread_id: 1
                   parent_id: 1
       responses:
         '201':
@@ -366,7 +359,6 @@ paths:
                     message_content: Message content
                     timestamp: 2023-01-01T00:00:00.000000
                     sender_id: 1
-                    thread_id: 1
                     parent_id: null
                 reply-message:
                   description: A message that is a reply to another message, has a parent ID
@@ -375,7 +367,6 @@ paths:
                     message_content: Message content
                     timestamp: 2023-01-01T00:00:00.000000
                     sender_id: 2
-                    thread_id: 1
                     parent_id: 1
         '404':
           description: The message was not found
@@ -395,7 +386,6 @@ paths:
                   message_content: Message content
                   timestamp: 2023-01-01T00:00:00.000000
                   sender_id: 1
-                  thread_id: 1
               reply-message:
                 description: A message that is a reply to another message, has a parent ID
                 value:
@@ -403,7 +393,6 @@ paths:
                   message_content: Message content
                   timestamp: 2023-01-01T00:00:00.000000
                   sender_id: 2
-                  thread_id: 1
                   parent_id: 1
       responses:
         '204':
