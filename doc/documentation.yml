@@ -53,6 +53,7 @@ components:
         - message_content
         - timestamp
         - sender_id
+        - thread_id
       type: object
     Reaction:
       properties:
@@ -302,9 +303,24 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Message'
-            example:
-              message: three-body-problem
-              thread: 1
+            examples:
+              thread-opening-message:
+                description: A message that starts a thread, does not have a parent ID
+                value:
+                  message_id: 1
+                  message_content: Message content
+                  timestamp: 2023-01-01T00:00:00.000000
+                  sender_id: 1
+                  thread_id: 1
+              reply-message:
+                description: A message that is a reply to another message, has a parent ID
+                value:
+                  message_id: 2
+                  message_content: Message content
+                  timestamp: 2023-01-01T00:00:00.000000
+                  sender_id: 2
+                  thread_id: 1
+                  parent_id: 1
       responses:
         '201':
           description: Thread created successfully
@@ -342,13 +358,25 @@ paths:
           description: Message identification
           content:
             application/json:
-              example:
-                message_id: 1
-                message_content: Message content
-                timestamp: 2023-01-01T00:00:00.000000
-                sender_id: 1
-                thread_ID: 1
-                parent_ID: None
+              examples:
+                thread-opening-message:
+                  description: A message that starts a thread, does not have a parent ID
+                  value:
+                    message_id: 1
+                    message_content: Message content
+                    timestamp: 2023-01-01T00:00:00.000000
+                    sender_id: 1
+                    thread_id: 1
+                    parent_id: null
+                reply-message:
+                  description: A message that is a reply to another message, has a parent ID
+                  value:
+                    message_id: 2
+                    message_content: Message content
+                    timestamp: 2023-01-01T00:00:00.000000
+                    sender_id: 2
+                    thread_id: 1
+                    parent_id: 1
         '404':
           description: The message was not found
     put:
@@ -359,8 +387,24 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Message'
-            example:
-              title: thread1
+            examples:
+              thread-opening-message:
+                description: A message that starts a thread, does not have a parent ID
+                value:
+                  message_id: 1
+                  message_content: Message content
+                  timestamp: 2023-01-01T00:00:00.000000
+                  sender_id: 1
+                  thread_id: 1
+              reply-message:
+                description: A message that is a reply to another message, has a parent ID
+                value:
+                  message_id: 2
+                  message_content: Message content
+                  timestamp: 2023-01-01T00:00:00.000000
+                  sender_id: 2
+                  thread_id: 1
+                  parent_id: 1
       responses:
         '204':
           description: Message information updated successfully
