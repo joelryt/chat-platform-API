@@ -83,7 +83,7 @@ def print_thread(thread_title, thread_id, messages):
     :param thread_id: id of thread
     :param messages: list of messages to be printed (list of dictionaries)
     """
-    messages.sort(key=lambda x: x["timestamp"])
+    messages.sort(key=lambda x: x["timestamp"], reverse=True)
     printed_thread = f"Thread Title: {thread_title} Id: {thread_id}\n\n"
     for message in messages:
         printed_thread += f"{print_message(message)}\n\n"
