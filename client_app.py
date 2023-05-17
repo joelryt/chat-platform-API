@@ -83,7 +83,7 @@ def print_thread(thread_title, thread_id, messages):
     :param thread_id: id of thread
     :param messages: list of messages to be printed (list of dictionaries)
     """
-    messages.sort(key=lambda x: x["timestamp"], reverse=True)
+    messages.sort(key=lambda x: x["timestamp"], reverse=False)
     printed_thread = f"Thread Title: {thread_title} Id: {thread_id}\n\n"
     for message in messages:
         printed_thread += f"{print_message(message)}\n\n"
@@ -253,7 +253,7 @@ def reply_to_message(session, resp):
             user_id = ask_username(session)
             message_item = {
                 "message_content": message_content,
-                "timestamp": datetime.now(pytz.utc).isoformat(),
+                "timestamp": datetime.now(pytz.timezone('Europe/Helsinki')).isoformat(),
                 "sender_id": int(user_id),
                 "parent_id": int(parent_id),
             }
